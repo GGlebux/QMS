@@ -26,6 +26,11 @@ public class GroupService {
                         "Group with id=%d not found!".formatted(id)));
     }
 
+    @Transactional
+    public Group save(Group group){
+        return groupRepo.save(group);
+    }
+
 
     @Transactional
     public Group saveAll(Collection<Group> groups) {

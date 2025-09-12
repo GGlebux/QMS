@@ -8,8 +8,9 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.EnumType.STRING;
-import static jakarta.persistence.FetchType.LAZY;
+import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static java.lang.Boolean.FALSE;
 import static java.time.LocalDateTime.now;
@@ -42,14 +43,18 @@ public class User {
     private Boolean isPhoneVerified = FALSE;
 
     // Now that don t need
-//    @OneToMany(mappedBy = "user", fetch = EAGER, cascade = ALL, orphanRemoval = true)
-//    private Set<Ticket> tickets = new HashSet<>();
+    @OneToMany(mappedBy = "user", fetch = EAGER, cascade = ALL, orphanRemoval = true)
+    private Set<Ticket> tickets;
 
-    @ManyToMany(fetch = LAZY)
-    @JoinTable(
-            name = "user_group",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "group_id")
-    )
-    private Set<Group> groups = new HashSet<>();
+    @Override
+    public String toString() {
+        return "User{" +
+                "createdAt=" + createdAt +
+                ", isPhoneVerified=" + isPhoneVerified +
+                ", role=" + role +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", name='" + name + '\'' +
+                ", id=" + id +
+                '}';
+    }
 }

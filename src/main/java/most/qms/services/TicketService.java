@@ -1,8 +1,10 @@
 package most.qms.services;
 
 import jakarta.persistence.EntityNotFoundException;
+import most.qms.dtos.responses.TicketDto;
 import most.qms.exceptions.VerificationException;
 import most.qms.models.Group;
+import most.qms.models.Status;
 import most.qms.models.Ticket;
 import most.qms.models.User;
 import most.qms.repositories.TicketRepository;
@@ -11,6 +13,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import static java.time.LocalDateTime.now;
@@ -19,11 +23,16 @@ import static most.qms.models.Status.*;
 
 @Service
 @Transactional(readOnly = true)
-class TicketService {
+public class TicketService {
     private final TicketRepository ticketRepo;
     private final UserService userService;
     private final GroupService groupService;
     private final DailyCounterService dailyCounterService;
+    private static final EnumSet<Status> ACTIVE_STATUSES;
+
+    static {
+        ACTIVE_STATUSES= of(WAITING, CALLED);
+    }
 
     @Autowired
     TicketService(TicketRepository ticketRepo, UserService userService, GroupService groupService, DailyCounterService dailyCounterService) {
@@ -33,25 +42,43 @@ class TicketService {
         this.dailyCounterService = dailyCounterService;
     }
 
+    public List<TicketDto> findAll(){
+        return ticketRepo.findAll().stream().map(this::convertToDto).toList();
+    };
+
     @Transactional
-    public Ticket create(Long userId) {
+    public TicketDto create(Long userId) {
         User user = userService.findByUserId(userId);
         if (!user.getIsPhoneVerified()) {
             throw new VerificationException("User with id=%d not verified!"
                     .formatted(userId));
         }
 
-        Boolean hasActiveTickets = ticketRepo
-                .existsByUserAndStatusIn(user,
-                        of(WAITING, CALLED));
+        System.err.println(user.getTickets());
+        boolean hasActiveTickets = user
+                .getTickets()
+                .stream()
+                .map(Ticket::getStatus)
+                .anyMatch(ACTIVE_STATUSES::contains);
 
+        System.err.println(hasActiveTickets);
         if (hasActiveTickets) {
             throw new DataIntegrityViolationException(
                     "User with id=%d already has active ticket!"
                             .formatted(userId));
         }
         Group group = groupService.findLastAvailable();
-        return ticketRepo.save(new Ticket(user, group, dailyCounterService.getAndIncrement()));
+        Long number = dailyCounterService.getAndIncrement();
+
+        Ticket saved = ticketRepo.save(new Ticket(user, group, number));
+
+        group.getTickets().add(saved);
+        groupService.save(group);
+
+        user.getTickets().add(saved);
+        userService.save(user);
+
+        return convertToDto(saved);
     }
 
     @Transactional
@@ -83,5 +110,12 @@ class TicketService {
                     ticket.setStatus(COMPLETE);
                 });
         ticketRepo.saveAll(tickets);
+    }
+
+    private TicketDto convertToDto(Ticket entity){
+        return new TicketDto(entity.getId(),
+                entity.getNumber(),
+                entity.getStatus(),
+                entity.getCreatedAt());
     }
 }

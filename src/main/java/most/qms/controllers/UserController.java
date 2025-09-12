@@ -27,9 +27,20 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addUser(@RequestBody UserRequest dto){
+    public ResponseEntity<?> addUser(@RequestBody UserRequest dto) {
         return ok(service.save(dto));
     }
 
+    @PostMapping("/{userId}/send_code")
+    public ResponseEntity<?> sendCode(@PathVariable Long userId) {
+        service.sendCodeToUserPhone(userId);
+        return ok("Code has been sent");
+    }
 
+    @PostMapping("/{userId}")
+    public ResponseEntity<?> verifyCode(@PathVariable Long userId,
+                                        @RequestParam String code) {
+        service.verifyCode(userId, code);
+        return ok("Code has been verified");
+    }
 }

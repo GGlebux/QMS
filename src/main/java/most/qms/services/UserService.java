@@ -3,6 +3,7 @@ package most.qms.services;
 
 import jakarta.persistence.EntityNotFoundException;
 import most.qms.dtos.requests.UserRequest;
+import most.qms.exceptions.VerificationException;
 import most.qms.models.User;
 import most.qms.repositories.UserRepository;
 import org.modelmapper.ModelMapper;
@@ -12,22 +13,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static java.util.Set.of;
-
 @Service
 @Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepo;
     private final ModelMapper mapper;
     private final PhoneVerificationService verifyService;
-    private final GroupService groupService;
 
     @Autowired
-    public UserService(UserRepository userRepo, ModelMapper mapper, PhoneVerificationService verifyService, GroupService groupService) {
+    public UserService(UserRepository userRepo, ModelMapper mapper, PhoneVerificationService verifyService) {
         this.userRepo = userRepo;
         this.mapper = mapper;
         this.verifyService = verifyService;
-        this.groupService = groupService;
     }
 
     public List<User> findAll() {
@@ -40,15 +37,14 @@ public class UserService {
                         "User with id=%d not found!".formatted(userId)));
     }
 
-    public List<User> findByPhoneNumber(String phoneNumber) {
-        return userRepo.findByPhoneNumber(phoneNumber);
-    }
-
-
     @Transactional
     public User save(UserRequest dto) {
+        boolean isExist = userRepo.existsByPhoneNumber(dto.getPhoneNumber());
+        if (isExist) {
+            throw new RuntimeException("User with number %s already exists!"
+                    .formatted(dto.getPhoneNumber()));
+        }
         User toSave = convertToEntity(dto);
-        toSave.setGroups(of(groupService.findLastAvailable()));
         return userRepo.save(toSave);
     }
 
@@ -57,14 +53,20 @@ public class UserService {
         userRepo.save(entity);
     }
 
-    public void sendCodeToUserPhone(Long userId){
+    @Transactional
+    public void sendCodeToUserPhone(Long userId) {
         User user = this.findByUserId(userId);
+        this.isPhoneVerifiedOrElseThrow(user);
         verifyService.sendVerificationCode(user.getPhoneNumber());
     }
 
-    public Boolean verifyCode(Long userId, String code) {
+    @Transactional
+    public void verifyCode(Long userId, String code) {
         User user = this.findByUserId(userId);
-        return verifyService.verifyCode(user.getPhoneNumber(), code);
+        this.isPhoneVerifiedOrElseThrow(user);
+        verifyService.verifyCode(user.getPhoneNumber(), code);
+        user.setIsPhoneVerified(true);
+        userRepo.save(user);
     }
 
     @Transactional
@@ -92,6 +94,14 @@ public class UserService {
         entity.setName(dto.getName());
         entity.setPhoneNumber(dto.getPhoneNumber());
         return entity;
+    }
+
+    private void isPhoneVerifiedOrElseThrow(User user) {
+        if (user.getIsPhoneVerified()) {
+            throw new VerificationException(
+                    "User with id=%d already verified!"
+                            .formatted(user.getId()));
+        }
     }
 
 }

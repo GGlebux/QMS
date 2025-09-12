@@ -49,4 +49,16 @@ public class Group {
                 .formatted(createdAt
                         .format(ISO_DATE_TIME));
     }
+
+    @Override
+    public String toString() {
+        return "Group{" +
+                "completedAt=" + completedAt +
+                ", name='" + name + '\'' +
+                ", status=" + status +
+                ", createdAt=" + createdAt +
+                ", calledAt=" + calledAt +
+                ", id=" + id +
+                '}';
+    }
 }

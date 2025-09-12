@@ -15,10 +15,6 @@ import static java.time.LocalDateTime.now;
 @NoArgsConstructor
 public class PhoneVerification {
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(name = "id")
-    private Long id;
-
     @Column(name = "phone_number", nullable = false, unique = true)
     private String phoneNumber;
 
@@ -32,7 +28,7 @@ public class PhoneVerification {
     private LocalDateTime expiresAt = now().plusMinutes(5);
 
     public Boolean isExpired() {
-        return now().isAfter(expiresAt);
+        return expiresAt.isBefore(now());
     }
 
     public PhoneVerification(String phoneNumber, String code) {

@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.LAZY;
+import static jakarta.persistence.GenerationType.IDENTITY;
 import static java.time.LocalDateTime.now;
 import static most.qms.models.Status.WAITING;
 
@@ -22,20 +23,18 @@ import static most.qms.models.Status.WAITING;
 @Data
 @NoArgsConstructor
 public class Ticket {
-    @EmbeddedId
-    private TicketId id;
+    @Id
+    @GeneratedValue(strategy = IDENTITY)
+    @Column(name = "id")
+    private Long id;
 
     @ManyToOne(fetch = LAZY)
-    @MapsId("userId")
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
     @ManyToOne(fetch = LAZY)
-    @MapsId("groupId")
-    @JoinColumn(name = "group_id")
+    @JoinColumn(name = "group_id", referencedColumnName = "id")
     private Group group;
-
-
 
     @Column(name = "number", nullable = false, unique = true, updatable = false)
     private Long number;

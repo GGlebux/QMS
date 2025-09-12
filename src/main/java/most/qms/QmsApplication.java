@@ -25,7 +25,7 @@ public class QmsApplication {
         return new SmsSender() {
             @Override
             public void sendSms(String phoneNumber, String message) {
-                out.printf("Send sms {%s} to number {%s}", message, phoneNumber);
+                out.printf("Send sms {%s} to number {%s}\n", message, phoneNumber);
             }
         };
     }

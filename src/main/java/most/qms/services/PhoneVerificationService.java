@@ -31,8 +31,6 @@ public class PhoneVerificationService {
 
     @Transactional
     public void sendVerificationCode(String phoneNumber) {
-        repo.deleteByPhoneNumber(phoneNumber);
-
         String code = this.generateCode();
 
         PhoneVerification phoneVerification = new PhoneVerification(phoneNumber, code);
@@ -41,7 +39,7 @@ public class PhoneVerificationService {
         sender.sendSms(phoneNumber, SMS_TEMPLATE.formatted(code));
     }
 
-    public Boolean verifyCode(String phoneNumber, String codeFromUser) {
+    public void verifyCode(String phoneNumber, String codeFromUser) {
         PhoneVerification verification = repo
                 .findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -52,8 +50,6 @@ public class PhoneVerificationService {
         if (verification.isExpired()) {
             throw new VerificationException("Verification expired!");
         }
-
-        return true;
     }
 
     private String generateCode() {

@@ -7,13 +7,14 @@ spring:
     username: ${QMS_DB_USERNAME}
     password: ${QMS_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+#    url: jdbc:tc:postgresql:17:///sandbox/TC_DAEMON=true
 
   jpa:
     properties:
       hibernate:
         show_sql: true
         hbm2ddl:
-          auto: update
+          auto: create
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   mvc:
