@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Envirement variables ###
-!**/src/.env
+**/src/.env
