@@ -3,14 +3,13 @@ package most.qms.dtos.requests;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@Data
-public class UserRequest {
-    @NotNull(message = "name should not be empty!")
-    @Size(min = 2, max = 64, message = "name should be in range from 2 to 64 characters")
-    private String name;
 
+@Data
+@AllArgsConstructor
+public class LoginRequest {
     @NotNull(message = "phoneNumber should not be empty!")
     @Pattern(regexp = "^\\+\\d{1,15}$", message = "phoneNumber is incorrect")
     private String phoneNumber;
