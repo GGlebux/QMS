@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static java.time.LocalDateTime.now;
 import static java.util.Set.of;
-import static most.qms.models.Status.COMPLETE;
+import static most.qms.models.GroupStatus.COMPLETE;
 
 @Service
 @Transactional(readOnly = true)

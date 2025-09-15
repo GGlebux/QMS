@@ -12,7 +12,7 @@ import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
-import static most.qms.models.Status.WAITING;
+import static most.qms.models.GroupStatus.WAITING;
 
 @Entity
 @Table(name = "\"group\"")
@@ -28,7 +28,7 @@ public class Group {
 
     @Enumerated(STRING)
     @Column(name = "status", nullable = false)
-    private Status status = WAITING;
+    private GroupStatus status = WAITING;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = now();
@@ -55,7 +55,7 @@ public class Group {
         return "Group{" +
                 "completedAt=" + completedAt +
                 ", name='" + name + '\'' +
-                ", status=" + status +
+                ", groupStatus=" + status +
                 ", createdAt=" + createdAt +
                 ", calledAt=" + calledAt +
                 ", id=" + id +

@@ -10,7 +10,7 @@ import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static java.time.LocalDateTime.now;
-import static most.qms.models.Status.WAITING;
+import static most.qms.models.TicketStatus.WAITING;
 
 @Entity
 @Table(name = "ticket",
@@ -41,7 +41,7 @@ public class Ticket {
 
     @Enumerated(STRING)
     @Column(name = "status", nullable = false)
-    private Status status = WAITING;
+    private TicketStatus status = WAITING;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = now();

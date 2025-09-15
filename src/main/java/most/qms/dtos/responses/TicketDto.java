@@ -2,7 +2,7 @@ package most.qms.dtos.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import most.qms.models.Status;
+import most.qms.models.TicketStatus;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +11,6 @@ import java.time.LocalDateTime;
 public class TicketDto {
     private Long id;
     private Long queuePosition;
-    private Status status;
+    private TicketStatus status;
     private LocalDateTime createdAt;
 }

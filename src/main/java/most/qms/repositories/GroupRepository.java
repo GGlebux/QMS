@@ -14,7 +14,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     @Query("""
             SELECT g 
             FROM Group g 
-            WHERE g.status = most.qms.models.Status.WAITING 
+            WHERE g.status = most.qms.models.GroupStatus.WAITING 
             AND SIZE(g.tickets) < 10
             ORDER BY g.createdAt ASC 
             """)
@@ -23,7 +23,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     @Query("""
             SELECT g 
             FROM Group g 
-            WHERE g.status = most.qms.models.Status.CALLED 
+            WHERE g.status = most.qms.models.GroupStatus.CALLED 
             ORDER BY g.calledAt DESC 
             """)
     Optional<Group> findLastCalled();
@@ -32,7 +32,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             """
             SELECT g 
             FROM Group g 
-            WHERE g.status = most.qms.models.Status.WAITING  
+            WHERE g.status = most.qms.models.GroupStatus.WAITING  
             ORDER BY g.createdAt ASC 
             """
     )
