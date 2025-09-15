@@ -4,7 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import most.qms.dtos.responses.TicketDto;
 import most.qms.exceptions.VerificationException;
 import most.qms.models.Group;
-import most.qms.models.Status;
+import most.qms.models.TicketStatus;
 import most.qms.models.Ticket;
 import most.qms.models.User;
 import most.qms.repositories.TicketRepository;
@@ -19,7 +19,7 @@ import java.util.Set;
 
 import static java.time.LocalDateTime.now;
 import static java.util.EnumSet.of;
-import static most.qms.models.Status.*;
+import static most.qms.models.TicketStatus.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -28,10 +28,10 @@ public class TicketService {
     private final UserService userService;
     private final GroupService groupService;
     private final DailyCounterService dailyCounterService;
-    private static final EnumSet<Status> ACTIVE_STATUSES;
+    private static final EnumSet<TicketStatus> ACTIVE_TICKET_STATUSES;
 
     static {
-        ACTIVE_STATUSES= of(WAITING, CALLED);
+        ACTIVE_TICKET_STATUSES = of(WAITING, CALLED);
     }
 
     @Autowired
@@ -59,7 +59,7 @@ public class TicketService {
                 .getTickets()
                 .stream()
                 .map(Ticket::getStatus)
-                .anyMatch(ACTIVE_STATUSES::contains);
+                .anyMatch(ACTIVE_TICKET_STATUSES::contains);
 
         System.err.println(hasActiveTickets);
         if (hasActiveTickets) {

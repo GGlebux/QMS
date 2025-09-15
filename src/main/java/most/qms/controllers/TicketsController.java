@@ -1,7 +1,6 @@
 package most.qms.controllers;
 
 import most.qms.dtos.responses.TicketDto;
-import most.qms.models.Ticket;
 import most.qms.services.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

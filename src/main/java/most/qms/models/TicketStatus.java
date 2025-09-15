@@ -1,6 +1,6 @@
 package most.qms.models;
 
-public enum Status {
+public enum TicketStatus {
     WAITING,
     CALLED,
     COMPLETE,
