@@ -11,7 +11,7 @@ import java.util.List;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
-@RequestMapping("users/{userId}/tickets")
+@RequestMapping("/api/users/{userId}/tickets")
 public class TicketsController {
     private final TicketService ticketService;
 

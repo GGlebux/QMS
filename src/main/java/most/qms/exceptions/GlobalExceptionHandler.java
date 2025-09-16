@@ -24,11 +24,4 @@ public class GlobalExceptionHandler {
     public String handleEntityNotFoundException(EntityNotFoundException e){
         return e.getMessage();
     }
-
-    @ExceptionHandler(RuntimeException.class)
-    @ResponseStatus(BAD_REQUEST)
-    @ResponseBody
-    public String handleRuntimeException(RuntimeException e){
-        return e.getMessage();
-    }
 }

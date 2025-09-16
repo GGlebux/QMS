@@ -44,11 +44,11 @@ public class TicketService {
 
     public List<TicketDto> findAll(){
         return ticketRepo.findAll().stream().map(this::convertToDto).toList();
-    };
+    }
 
     @Transactional
     public TicketDto create(Long userId) {
-        User user = userService.findByUserId(userId);
+        User user = userService.findEntityById(userId);
         if (!user.getIsPhoneVerified()) {
             throw new VerificationException("User with id=%d not verified!"
                     .formatted(userId));

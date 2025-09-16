@@ -1,0 +1,43 @@
+package most.qms.controllers;
+
+import most.qms.dtos.requests.LoginRequest;
+import most.qms.dtos.requests.UserRequest;
+import most.qms.dtos.responses.UserResponse;
+import most.qms.services.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.ResponseEntity.status;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+    private final UserService userService;
+
+    @Autowired
+    public AuthController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<UserResponse> findById(@PathVariable Long userId) {
+        return userService.findDtoById(userId);
+    }
+
+    @PostMapping
+    public ResponseEntity<UserResponse> create(@RequestBody UserRequest dto) {
+        return userService.create(dto);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest login) {
+        return status(FORBIDDEN).build();
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody LoginRequest logout) {
+        return status(FORBIDDEN).build();
+    }
+}

@@ -3,15 +3,19 @@ package most.qms.services;
 
 import jakarta.persistence.EntityNotFoundException;
 import most.qms.dtos.requests.UserRequest;
+import most.qms.dtos.responses.UserResponse;
 import most.qms.exceptions.VerificationException;
 import most.qms.models.User;
 import most.qms.repositories.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static org.springframework.http.ResponseEntity.ok;
 
 @Service
 @Transactional(readOnly = true)
@@ -31,21 +35,24 @@ public class UserService {
         return userRepo.findAll();
     }
 
-    public User findByUserId(Long userId) {
+    public User findEntityById(Long userId) {
         return userRepo.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "User with id=%d not found!".formatted(userId)));
     }
+    public ResponseEntity<UserResponse> findDtoById(Long userId){
+        return ok(convertToDto(this.findEntityById(userId)));
+    }
 
     @Transactional
-    public User save(UserRequest dto) {
+    public ResponseEntity<UserResponse> create(UserRequest dto) {
         boolean isExist = userRepo.existsByPhoneNumber(dto.getPhoneNumber());
         if (isExist) {
             throw new RuntimeException("User with number %s already exists!"
                     .formatted(dto.getPhoneNumber()));
         }
-        User toSave = convertToEntity(dto);
-        return userRepo.save(toSave);
+        User saved = userRepo.save(convertToEntity(dto));
+        return ok(convertToDto(saved));
     }
 
     @Transactional
@@ -55,14 +62,14 @@ public class UserService {
 
     @Transactional
     public void sendCodeToUserPhone(Long userId) {
-        User user = this.findByUserId(userId);
+        User user = this.findEntityById(userId);
         this.isPhoneVerifiedOrElseThrow(user);
         verifyService.sendVerificationCode(user.getPhoneNumber());
     }
 
     @Transactional
     public void verifyCode(Long userId, String code) {
-        User user = this.findByUserId(userId);
+        User user = this.findEntityById(userId);
         this.isPhoneVerifiedOrElseThrow(user);
         verifyService.verifyCode(user.getPhoneNumber(), code);
         user.setIsPhoneVerified(true);
@@ -71,7 +78,7 @@ public class UserService {
 
     @Transactional
     public User update(Long id, UserRequest dto) {
-        User dbEntity = findByUserId(id);
+        User dbEntity = findEntityById(id);
         return userRepo.save(convertToEntity(dbEntity, dto));
     }
 
@@ -94,6 +101,10 @@ public class UserService {
         entity.setName(dto.getName());
         entity.setPhoneNumber(dto.getPhoneNumber());
         return entity;
+    }
+
+    private UserResponse convertToDto(User user){
+        return mapper.map(user, UserResponse.class);
     }
 
     private void isPhoneVerifiedOrElseThrow(User user) {
