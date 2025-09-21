@@ -21,3 +21,12 @@ spring:
     hidden method:
       filter:
         enabled: true
+
+# Twilio configuration
+twilio:
+  account:
+    sid: ${TWILIO_ACCOUNT_SID}
+  auth:
+    token: ${TWILIO_AUTH_TOKEN}
+titi:
+  miti: titimiti
