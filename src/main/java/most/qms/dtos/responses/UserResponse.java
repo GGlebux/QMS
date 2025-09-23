@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import most.qms.models.Role;
+import most.qms.models.UserStatus;
+import most.qms.services.UserService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +21,7 @@ public class UserResponse {
     private LocalDate birthDate;
     private String phoneNumber;
     private Boolean isPhoneVerified;
+    private UserStatus status;
     private Role role;
     private LocalDateTime createdAt;
 }

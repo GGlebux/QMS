@@ -3,6 +3,7 @@ package most.qms.models;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.testcontainers.shaded.org.checkerframework.checker.units.qual.C;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 import static java.lang.Boolean.FALSE;
 import static java.time.LocalDateTime.now;
 import static most.qms.models.Role.ROLE_USER;
+import static most.qms.models.UserStatus.PENDING;
 
 @Entity
 @Table(name = "\"user\"")
@@ -37,7 +39,11 @@ public class User {
     private String phoneNumber;
 
     @Enumerated(STRING)
-    @Column(name = "role", nullable = false, columnDefinition = "")
+    @Column(name = "status", nullable = false)
+    private UserStatus status = PENDING;
+
+    @Enumerated(STRING)
+    @Column(name = "role", nullable = false)
     private Role role = ROLE_USER;
 
     @Column(name = "created_at", nullable = false)
@@ -45,6 +51,9 @@ public class User {
 
     @Column(name = "is_phone_verified", nullable = false)
     private Boolean isPhoneVerified = FALSE;
+
+    @Column(name = "password", nullable = false)
+    private String password;
 
     // Now that don t need
     @OneToMany(mappedBy = "user", fetch = EAGER, cascade = ALL, orphanRemoval = true)

@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static java.lang.String.valueOf;
 import static java.util.concurrent.ThreadLocalRandom.current;
-
 @Service
 @Transactional(readOnly = true)
 public class PhoneVerificationService {
@@ -21,7 +20,7 @@ public class PhoneVerificationService {
             
             Your verification code is: %s.\
             
-            The code will expire in 5 minutes""";
+            The code will expire in 2 minute""";
 
     @Autowired
     public PhoneVerificationService(PhoneVerificationRepository repo, SmsSender sender) {

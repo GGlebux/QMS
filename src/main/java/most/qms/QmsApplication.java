@@ -2,6 +2,7 @@ package most.qms;
 
 import most.qms.services.SmsSender;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +11,6 @@ import static java.lang.System.out;
 
 @SpringBootApplication
 public class QmsApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(QmsApplication.class, args);
     }
@@ -29,5 +29,7 @@ public class QmsApplication {
             }
         };
     }
+
+
 
 }

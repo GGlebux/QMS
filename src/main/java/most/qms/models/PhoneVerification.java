@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
 import static java.time.LocalDateTime.now;
 
 @Entity
@@ -25,7 +24,7 @@ public class PhoneVerification {
     private LocalDateTime createdAt = now();
 
     @Column(name = "expires_at", nullable = false)
-    private LocalDateTime expiresAt = now().plusMinutes(5);
+    private LocalDateTime expiresAt = now().plusMinutes(2);
 
     public Boolean isExpired() {
         return expiresAt.isBefore(now());

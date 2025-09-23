@@ -26,7 +26,7 @@ public class PhoneVerificationController {
     @PostMapping
     public ResponseEntity<?> verifyCode(@PathVariable Long userId,
                                         @RequestBody String code) {
-        service.verifyCode(userId, code);
+        service.verifyUserCode(userId, code);
         return ok("Code has been verified");
     }
 }

@@ -1,20 +1,22 @@
+app:
+  jwt:
+    secret: "9c82e0b12c4f45f292187dbab938f61adfsdfsdfsdf"
+
 spring:
   application:
     name: queue_management_system
 
   datasource:
-    url: ${QMS_DB_URL}
-    username: ${QMS_DB_USERNAME}
-    password: ${QMS_DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-#    url: jdbc:tc:postgresql:17:///sandbox/TC_DAEMON=true
+    url: jdbc:postgresql://localhost:5432/QMS
+    username: postgres
+    password: postgres
 
   jpa:
     properties:
       hibernate:
         show_sql: true
         hbm2ddl:
-          auto: create
+          auto: update
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   mvc:
