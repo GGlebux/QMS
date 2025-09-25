@@ -2,40 +2,39 @@ package most.qms.services;
 
 import jakarta.persistence.EntityNotFoundException;
 import most.qms.dtos.requests.LoginRequest;
+import most.qms.dtos.responses.JwtAuthResponse;
 import most.qms.exceptions.AuthException;
 import most.qms.models.User;
 import most.qms.repositories.UserRepository;
+import most.qms.security.JwtService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static java.time.Instant.now;
-import static java.time.temporal.ChronoUnit.HOURS;
 import static most.qms.models.UserStatus.PENDING;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.ResponseEntity.ok;
-import static org.springframework.http.ResponseEntity.status;
-import static org.springframework.security.oauth2.jwt.JwtClaimsSet.builder;
-import static org.springframework.security.oauth2.jwt.JwtEncoderParameters.from;
 
 @Service
 public class AuthService {
     private final UserRepository userRepo;
-    private final PasswordEncoder encoder;
-    private final JwtEncoder jwtEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authManager;
 
-    public AuthService(UserRepository userRepo, PasswordEncoder encoder, JwtEncoder jwtEncoder) {
+    @Autowired
+    public AuthService(UserRepository userRepo, JwtService jwtService, AuthenticationManager authManager) {
         this.userRepo = userRepo;
-        this.encoder = encoder;
-        this.jwtEncoder = jwtEncoder;
+        this.jwtService = jwtService;
+        this.authManager = authManager;
     }
 
     @Transactional(readOnly = true)
-    public ResponseEntity<String> login(LoginRequest login) {
-        String phoneNumber = login.getPhoneNumber();
+    public ResponseEntity<JwtAuthResponse> login(LoginRequest dto) {
+        String phoneNumber = dto.getPhoneNumber();
         User user = userRepo
                 .findByPhoneNumber(phoneNumber)
                 .orElseThrow(() ->
@@ -43,20 +42,17 @@ public class AuthService {
                                 "User with phone number '%s' not found!"
                                         .formatted(phoneNumber)));
 
-        if (user.getStatus().equals(PENDING)) {
+        if (user.getStatus() == PENDING) {
             throw new AuthException("User with phone number '%s' is not verified!");
         }
-        if (!login.getPassword().equals(user.getPassword())) {
-            return status(FORBIDDEN).body("Invalid password!");
-        }
 
-        JwtClaimsSet claims = builder()
-                .subject(user.getId().toString())
-                .claim("role", "ROLE_USER")
-                .issuedAt(now())
-                .expiresAt(now().plus(1, HOURS))
-                .build();
+        UsernamePasswordAuthenticationToken tempAuth = new UsernamePasswordAuthenticationToken(
+                dto.getPhoneNumber(),
+                dto.getPassword());
+        Authentication authentication = authManager
+                .authenticate(tempAuth);
+        String token = jwtService.generateToken((UserDetails) authentication.getPrincipal());
 
-        return ok(jwtEncoder.encode(from(claims)).getTokenValue());
+        return ok(new JwtAuthResponse(token));
     }
 }

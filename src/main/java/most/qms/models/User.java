@@ -1,13 +1,16 @@
 package most.qms.models;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.C;
+import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.Set;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -16,14 +19,16 @@ import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static java.lang.Boolean.FALSE;
 import static java.time.LocalDateTime.now;
+import static java.util.List.of;
 import static most.qms.models.Role.ROLE_USER;
 import static most.qms.models.UserStatus.PENDING;
 
 @Entity
-@Table(name = "\"user\"")
-@Data
+@Table(name = "\"user\"", indexes = @Index(columnList = "phone_number"))
+@Setter
+@Getter
 @NoArgsConstructor
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "id")
@@ -69,5 +74,26 @@ public class User {
                 ", name='" + name + '\'' +
                 ", id=" + id +
                 '}';
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return of(new SimpleGrantedAuthority(role.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return phoneNumber;
+    }
+
+
+    @Override
+    public boolean isEnabled() {
+        return isPhoneVerified;
     }
 }

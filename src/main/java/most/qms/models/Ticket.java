@@ -1,8 +1,9 @@
 package most.qms.models;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -20,7 +21,8 @@ import static most.qms.models.TicketStatus.WAITING;
         indexes = {
                 @Index(columnList = "status, number", name = "idx_ticket_status_number"),
         })
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 public class Ticket {
     @Id

@@ -2,29 +2,28 @@ package most.qms.services;
 
 
 import jakarta.persistence.EntityNotFoundException;
-import most.qms.dtos.requests.LoginRequest;
+import most.qms.dtos.requests.SendCodeRequest;
 import most.qms.dtos.requests.UserRequest;
+import most.qms.dtos.requests.VerifyCodeRequest;
 import most.qms.dtos.responses.UserResponse;
 import most.qms.exceptions.AuthException;
 import most.qms.exceptions.VerificationException;
 import most.qms.models.User;
-import most.qms.models.UserStatus;
 import most.qms.repositories.UserRepository;
+import org.jetbrains.annotations.NotNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static most.qms.models.UserStatus.ACTIVE;
-import static most.qms.models.UserStatus.PENDING;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.ResponseEntity.ok;
-import static org.springframework.http.ResponseEntity.status;
 
 @Service
 @Transactional(readOnly = true)
@@ -32,12 +31,17 @@ public class UserService {
     private final UserRepository userRepo;
     private final ModelMapper mapper;
     private final PhoneVerificationService verifyService;
+    private final PasswordEncoder passwordEncoder;
+
 
     @Autowired
-    public UserService(UserRepository userRepo, ModelMapper mapper, PhoneVerificationService verifyService) {
+    public UserService(UserRepository userRepo,
+                       ModelMapper mapper,
+                       PhoneVerificationService verifyService, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.mapper = mapper;
         this.verifyService = verifyService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> findAll() {
@@ -46,8 +50,7 @@ public class UserService {
 
     public User findEntityById(Long userId) {
         return userRepo.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "User with id=%d not found!".formatted(userId)));
+                .orElseThrow(throwNotFound("User with id=%d not found!".formatted(userId)));
     }
 
     public ResponseEntity<UserResponse> findDtoById(Long userId) {
@@ -77,24 +80,6 @@ public class UserService {
         return ok(convertToDto(userRepo.save(toSave)));
     }
 
-    public ResponseEntity<String> login(LoginRequest login) {
-        String phoneNumber = login.getPhoneNumber();
-        User user = userRepo
-                .findByPhoneNumber(phoneNumber)
-                .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "User with phone number '%s' not found!"
-                                        .formatted(phoneNumber)));
-
-        if (user.getStatus().equals(PENDING)){
-            throw new AuthException("User with phone number '%s' is not verified!");
-        }
-
-        return switch (login.getPassword().equals(user.getPassword())) {
-            case true -> ok("Success login");
-            case false -> status(FORBIDDEN).body("Invalid login or password!");
-        };
-    }
 
     @Transactional
     public void save(User entity) {
@@ -102,16 +87,24 @@ public class UserService {
     }
 
     @Transactional
-    public void sendCodeToUserPhone(Long userId) {
-        User user = this.findEntityById(userId);
+    public void sendCodeToUserPhone(SendCodeRequest dto) {
+        var phoneNumber = dto.getPhoneNumber();
+        User user = userRepo
+                .findByPhoneNumber(phoneNumber)
+                .orElseThrow(throwNotFound("User with phone number='%s' not found!"
+                        .formatted(phoneNumber)));
         this.isPhoneVerifiedOrElseThrow(user);
-        verifyService.sendVerificationCode(user.getPhoneNumber());
+        verifyService.sendVerificationCode(phoneNumber);
     }
 
     @Transactional
-    public void verifyUserCode(Long userId, String code) {
-        User user = this.findEntityById(userId);
-        this.isPhoneVerifiedOrElseThrow(user);
+    public void verifyUserCode(VerifyCodeRequest dto) {
+        var phoneNumber = dto.getPhoneNumber();
+        var code = dto.getCode();
+        User user = userRepo
+                .findByPhoneNumber(phoneNumber)
+                .orElseThrow(throwNotFound("User with phone number='%s' not found!"
+                        .formatted(phoneNumber)));
         verifyService.verifyCode(user.getPhoneNumber(), code);
         user.setStatus(ACTIVE);
         user.setIsPhoneVerified(true);
@@ -133,16 +126,19 @@ public class UserService {
     private User convertToEntity(UserRequest dto) {
         User user = new User();
         mapper.map(dto, user);
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
         return user;
     }
 
     // ToDo: дополнить для всех случаев!
+
     private User convertToEntity(User entity, UserRequest dto) {
         if (!entity.getPhoneNumber().equals(dto.getPhoneNumber())) {
             entity.setIsPhoneVerified(false);
         }
         entity.setName(dto.getName());
         entity.setPhoneNumber(dto.getPhoneNumber());
+        entity.setPassword(passwordEncoder.encode(dto.getPassword()));
         return entity;
     }
 
@@ -158,4 +154,8 @@ public class UserService {
         }
     }
 
+    private static @NotNull Supplier<EntityNotFoundException> throwNotFound(String phoneNumber) {
+        return () -> new EntityNotFoundException(
+                phoneNumber);
+    }
 }

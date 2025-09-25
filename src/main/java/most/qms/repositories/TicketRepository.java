@@ -1,7 +1,7 @@
 package most.qms.repositories;
 
-import most.qms.models.TicketStatus;
 import most.qms.models.Ticket;
+import most.qms.models.TicketStatus;
 import most.qms.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.EnumSet;
+import java.util.Optional;
 
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
@@ -25,9 +26,16 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             )
             """)
     Long findTicketsAhead(@Param("user_id") Long userId,
-                                     @Param("group_id") Long groupId);
+                          @Param("group_id") Long groupId);
 
 
+    @Query(
+            "SELECT t " +
+            "FROM Ticket t " +
+            "WHERE t.user.id = :userId " +
+            "AND t.status = most.qms.models.TicketStatus.WAITING"
+    )
+    Optional<Ticket> findActiveByUserId(@Param("userId") Long userId);
 
     Boolean existsByUserAndStatusIn(User user, EnumSet<TicketStatus> ticketStatuses);
 }

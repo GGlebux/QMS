@@ -2,6 +2,7 @@ package most.qms.controllers;
 
 import most.qms.dtos.requests.LoginRequest;
 import most.qms.dtos.requests.UserRequest;
+import most.qms.dtos.responses.JwtAuthResponse;
 import most.qms.dtos.responses.UserResponse;
 import most.qms.services.AuthService;
 import most.qms.services.UserService;
@@ -24,18 +25,13 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @GetMapping("/users/{userId}")
-    public ResponseEntity<UserResponse> findById(@PathVariable Long userId) {
-        return userService.findDtoById(userId);
-    }
-
-    @PostMapping("/auth/register")
-    public ResponseEntity<UserResponse> create(@RequestBody UserRequest dto) {
+    @PostMapping("/auth/sign-up")
+    public ResponseEntity<UserResponse> register(@RequestBody UserRequest dto) {
         return userService.create(dto);
     }
 
-    @PostMapping("/auth/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest login) {
+    @PostMapping("/auth/sign-in")
+    public ResponseEntity<JwtAuthResponse> login(@RequestBody LoginRequest login) {
         return authService.login(login);
     }
 

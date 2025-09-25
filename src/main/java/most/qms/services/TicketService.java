@@ -2,14 +2,14 @@ package most.qms.services;
 
 import jakarta.persistence.EntityNotFoundException;
 import most.qms.dtos.responses.TicketDto;
+import most.qms.exceptions.EntityNotCreatedException;
 import most.qms.exceptions.VerificationException;
 import most.qms.models.Group;
-import most.qms.models.TicketStatus;
 import most.qms.models.Ticket;
+import most.qms.models.TicketStatus;
 import most.qms.models.User;
 import most.qms.repositories.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,9 +61,8 @@ public class TicketService {
                 .map(Ticket::getStatus)
                 .anyMatch(ACTIVE_TICKET_STATUSES::contains);
 
-        System.err.println(hasActiveTickets);
         if (hasActiveTickets) {
-            throw new DataIntegrityViolationException(
+            throw new EntityNotCreatedException(
                     "User with id=%d already has active ticket!"
                             .formatted(userId));
         }
@@ -82,12 +81,12 @@ public class TicketService {
     }
 
     @Transactional
-    public void cancel(Long ticketId) {
+    public void cancel(Long userId) {
         Ticket ticket = ticketRepo
-                .findById(ticketId)
+                .findActiveByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Ticket with id=%d now found!"
-                                .formatted(ticketId)));
+                                .formatted(userId)));
         ticket.setStatus(CANCELED);
         ticketRepo.save(ticket);
     }

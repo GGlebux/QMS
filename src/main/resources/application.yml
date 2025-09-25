@@ -1,6 +1,8 @@
-app:
-  jwt:
-    secret: "9c82e0b12c4f45f292187dbab938f61adfsdfsdfsdf"
+jwt:
+  expired:
+    days: 1
+  secret: "9c82e0b12c4f45f292187dbab938f61adfsdfsdfsdf"
+
 
 spring:
   application:
@@ -16,14 +18,13 @@ spring:
       hibernate:
         show_sql: true
         hbm2ddl:
-          auto: update
+          auto: validate
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   mvc:
     hidden method:
       filter:
         enabled: true
-
 # Twilio configuration
 twilio:
   account:

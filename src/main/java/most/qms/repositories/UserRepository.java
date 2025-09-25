@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    boolean existsByPhoneNumber(String phoneNumber);
+    Boolean existsByPhoneNumber(String phoneNumber);
 
     @Query(
             "SELECT (count(u) > 0) " +
@@ -19,6 +19,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "AND u.status = most.qms.models.UserStatus.ACTIVE"
     )
     boolean existsActiveByPhoneNumber(@Param("phoneNumber") String phoneNumber);
-
     Optional<User> findByPhoneNumber(String phoneNumber);
 }

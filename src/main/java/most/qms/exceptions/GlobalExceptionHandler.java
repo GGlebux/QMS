@@ -1,14 +1,12 @@
 package most.qms.exceptions;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -19,6 +17,13 @@ public class GlobalExceptionHandler {
         return e.getMessage();
     }
 
+    @ExceptionHandler(AuthException.class)
+    @ResponseStatus(BAD_REQUEST)
+    @ResponseBody
+    public String handleAuthException(AuthException e) {
+        return e.getMessage();
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(BAD_REQUEST)
     @ResponseBody
@@ -26,10 +31,10 @@ public class GlobalExceptionHandler {
         return e.getMessage();
     }
 
-    @ExceptionHandler(AuthException.class)
-    @ResponseStatus(FORBIDDEN)
+    @ExceptionHandler(EntityNotCreatedException.class)
+    @ResponseStatus(BAD_REQUEST)
     @ResponseBody
-    public String handleEntityNotFoundException(AuthException e) {
+    public String handleEntityNotCreatedException(EntityNotCreatedException e) {
         return e.getMessage();
     }
 }
