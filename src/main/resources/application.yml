@@ -3,6 +3,13 @@ jwt:
     days: 1
   secret: "9c82e0b12c4f45f292187dbab938f61adfsdfsdfsdf"
 
+group:
+  capacity: 5
+
+telegram:
+  bot:
+    token: 8499432352:AAFUiVWfKKt3RPjL6D8JWHlxNS678SnZJiE
+
 spring:
   application:
     name: queue_management_system

@@ -20,7 +20,8 @@ public class PhoneVerificationService {
             
             Your verification code is: %s.\
             
-            The code will expire in 2 minute""";
+            The code will expire in 2 minute.
+            """;
 
     @Autowired
     public PhoneVerificationService(PhoneVerificationRepository repo, SmsSender sender) {

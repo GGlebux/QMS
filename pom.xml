@@ -53,6 +53,17 @@
             <artifactId>twilio</artifactId>
             <version>11.0.0-rc.7</version>
         </dependency>
+        <dependency>
+            <groupId>org.telegram</groupId>
+            <artifactId>telegrambots</artifactId>
+            <version>6.9.7.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.telegram</groupId>
+            <artifactId>telegrambotsextensions</artifactId>
+            <version>6.9.7.1</version>
+        </dependency>
+
 
 
         <!--DATABASE-->

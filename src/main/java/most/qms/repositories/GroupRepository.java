@@ -4,6 +4,7 @@ import most.qms.models.Group;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -15,10 +16,10 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             SELECT g 
             FROM Group g 
             WHERE g.status = most.qms.models.GroupStatus.WAITING 
-            AND SIZE(g.tickets) < 10
+            AND SIZE(g.tickets) < :capacity 
             ORDER BY g.createdAt ASC 
             """)
-    Optional<Group> findNotFullAvailable();
+    Optional<Group> findNotFullAvailable(@Param("capacity") Long capacity);
 
     @Query("""
             SELECT g 

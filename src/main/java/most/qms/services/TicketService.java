@@ -32,6 +32,7 @@ public class TicketService {
     private final UserService userService;
     private final GroupService groupService;
     private final DailyCounterService dailyCounterService;
+    private final GroupService groupsService;
     private static final EnumSet<TicketStatus> ACTIVE_TICKET_STATUSES;
 
     static {
@@ -39,11 +40,12 @@ public class TicketService {
     }
 
     @Autowired
-    TicketService(TicketRepository repo, UserService userService, GroupService groupService, DailyCounterService dailyCounterService) {
+    TicketService(TicketRepository repo, UserService userService, GroupService groupService, DailyCounterService dailyCounterService, GroupService groupsService) {
         this.repo = repo;
         this.userService = userService;
         this.groupService = groupService;
         this.dailyCounterService = dailyCounterService;
+        this.groupsService = groupsService;
     }
 
     public List<TicketDto> findAll() {
@@ -66,7 +68,7 @@ public class TicketService {
                             .formatted(user.getPhoneNumber()));
         }
 
-        Group group = groupService.findLastAvailable();
+        Group group = groupService.getLastAvailable();
         Long number = dailyCounterService.getAndIncrement();
 
         Ticket saved = repo.save(new Ticket(user, group, number));
@@ -87,6 +89,9 @@ public class TicketService {
                 .orElseThrow(throwActiveTicketNotFound());
         ticket.setStatus(COMPLETE);
         ticket.setCompletedAt(now());
+
+        groupsService.createNewGroupIfPreviousFull(ticket.getGroup());
+        
         return ok(convertToDto(repo.save(ticket)));
     }
 
