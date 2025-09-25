@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 
 import static most.qms.models.UserStatus.ACTIVE;
 import static org.springframework.http.ResponseEntity.ok;
+import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
 @Service
 @Transactional(readOnly = true)
@@ -51,6 +52,12 @@ public class UserService {
     public User findEntityById(Long userId) {
         return userRepo.findById(userId)
                 .orElseThrow(throwNotFound("User with id=%d not found!".formatted(userId)));
+    }
+
+    public User findEntityByPhoneNumber(String phoneNumber) {
+        return userRepo.findByPhoneNumber(phoneNumber)
+                .orElseThrow(throwNotFound("User with phoneNumber=%s not found!"
+                        .formatted(phoneNumber)));
     }
 
     public ResponseEntity<UserResponse> findDtoById(Long userId) {
@@ -93,7 +100,7 @@ public class UserService {
                 .findByPhoneNumber(phoneNumber)
                 .orElseThrow(throwNotFound("User with phone number='%s' not found!"
                         .formatted(phoneNumber)));
-        this.isPhoneVerifiedOrElseThrow(user);
+        this.throwAlreadyVerify(user);
         verifyService.sendVerificationCode(phoneNumber);
     }
 
@@ -146,16 +153,28 @@ public class UserService {
         return mapper.map(user, UserResponse.class);
     }
 
-    private void isPhoneVerifiedOrElseThrow(User user) {
+    private void throwAlreadyVerify(User user) {
         if (user.getIsPhoneVerified()) {
             throw new VerificationException(
-                    "User with id=%d already verified!"
-                            .formatted(user.getId()));
+                    "User with phone number=%s already verified!"
+                            .formatted(user.getPhoneNumber()));
         }
     }
 
     private static @NotNull Supplier<EntityNotFoundException> throwNotFound(String phoneNumber) {
         return () -> new EntityNotFoundException(
                 phoneNumber);
+    }
+
+    protected User getUserFromContextAndVerify() {
+        var currentPhone = getContext().getAuthentication().getName();
+        User user = this.findEntityByPhoneNumber(currentPhone);
+        if (!user.getIsPhoneVerified()) {
+            throw new VerificationException(
+                    "User with phoneNumber=%s not verified!"
+                            .formatted(currentPhone));
+        }
+        return user;
+
     }
 }

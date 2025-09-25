@@ -3,7 +3,6 @@ jwt:
     days: 1
   secret: "9c82e0b12c4f45f292187dbab938f61adfsdfsdfsdf"
 
-
 spring:
   application:
     name: queue_management_system
@@ -31,5 +30,3 @@ twilio:
     sid: ${TWILIO_ACCOUNT_SID}
   auth:
     token: ${TWILIO_AUTH_TOKEN}
-titi:
-  miti: titimiti

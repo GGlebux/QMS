@@ -33,7 +33,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             "SELECT t " +
             "FROM Ticket t " +
             "WHERE t.user.id = :userId " +
-            "AND t.status = most.qms.models.TicketStatus.WAITING"
+            "AND (t.status = most.qms.models.TicketStatus.WAITING " +
+            "OR t.status = most.qms.models.TicketStatus.CALLED)"
     )
     Optional<Ticket> findActiveByUserId(@Param("userId") Long userId);
 

@@ -3,28 +3,32 @@ package most.qms.services;
 import jakarta.persistence.EntityNotFoundException;
 import most.qms.dtos.responses.TicketDto;
 import most.qms.exceptions.EntityNotCreatedException;
-import most.qms.exceptions.VerificationException;
 import most.qms.models.Group;
 import most.qms.models.Ticket;
 import most.qms.models.TicketStatus;
-import most.qms.models.User;
 import most.qms.repositories.TicketRepository;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static java.time.LocalDateTime.now;
 import static java.util.EnumSet.of;
 import static most.qms.models.TicketStatus.*;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.ResponseEntity.ok;
+import static org.springframework.http.ResponseEntity.status;
 
 @Service
 @Transactional(readOnly = true)
 public class TicketService {
-    private final TicketRepository ticketRepo;
+    private final TicketRepository repo;
     private final UserService userService;
     private final GroupService groupService;
     private final DailyCounterService dailyCounterService;
@@ -35,26 +39,21 @@ public class TicketService {
     }
 
     @Autowired
-    TicketService(TicketRepository ticketRepo, UserService userService, GroupService groupService, DailyCounterService dailyCounterService) {
-        this.ticketRepo = ticketRepo;
+    TicketService(TicketRepository repo, UserService userService, GroupService groupService, DailyCounterService dailyCounterService) {
+        this.repo = repo;
         this.userService = userService;
         this.groupService = groupService;
         this.dailyCounterService = dailyCounterService;
     }
 
-    public List<TicketDto> findAll(){
-        return ticketRepo.findAll().stream().map(this::convertToDto).toList();
+    public List<TicketDto> findAll() {
+        return repo.findAll().stream().map(this::convertToDto).toList();
     }
 
     @Transactional
-    public TicketDto create(Long userId) {
-        User user = userService.findEntityById(userId);
-        if (!user.getIsPhoneVerified()) {
-            throw new VerificationException("User with id=%d not verified!"
-                    .formatted(userId));
-        }
+    public ResponseEntity<TicketDto> create() {
+        var user = userService.getUserFromContextAndVerify();
 
-        System.err.println(user.getTickets());
         boolean hasActiveTickets = user
                 .getTickets()
                 .stream()
@@ -63,32 +62,46 @@ public class TicketService {
 
         if (hasActiveTickets) {
             throw new EntityNotCreatedException(
-                    "User with id=%d already has active ticket!"
-                            .formatted(userId));
+                    "User with phoneNumber=%s already has active ticket!"
+                            .formatted(user.getPhoneNumber()));
         }
+
         Group group = groupService.findLastAvailable();
         Long number = dailyCounterService.getAndIncrement();
 
-        Ticket saved = ticketRepo.save(new Ticket(user, group, number));
+        Ticket saved = repo.save(new Ticket(user, group, number));
 
         group.getTickets().add(saved);
         groupService.save(group);
-
         user.getTickets().add(saved);
         userService.save(user);
 
-        return convertToDto(saved);
+        return ok(convertToDto(saved));
     }
 
     @Transactional
-    public void cancel(Long userId) {
-        Ticket ticket = ticketRepo
-                .findActiveByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Ticket with id=%d now found!"
-                                .formatted(userId)));
+    public ResponseEntity<TicketDto> markAsComplete() {
+        var user = userService.getUserFromContextAndVerify();
+        var ticket = repo
+                .findActiveByUserId(user.getId())
+                .orElseThrow(throwActiveTicketNotFound());
+        ticket.setStatus(COMPLETE);
+        ticket.setCompletedAt(now());
+        return ok(convertToDto(repo.save(ticket)));
+    }
+
+
+    @Transactional
+    public ResponseEntity<String> cancel() {
+        var user = userService.getUserFromContextAndVerify();
+        Ticket ticket = repo
+                .findActiveByUserId(user.getId())
+                .orElseThrow(throwActiveTicketNotFound());
         ticket.setStatus(CANCELED);
-        ticketRepo.save(ticket);
+        repo.save(ticket);
+        return status(NO_CONTENT)
+                .body("Ticket № %s has been cancelled!"
+                        .formatted(ticket.getNumber()));
     }
 
 
@@ -97,7 +110,7 @@ public class TicketService {
         Set<Ticket> tickets = group.getTickets();
         tickets
                 .forEach(ticket -> ticket.setStatus(WAITING));
-        ticketRepo.saveAll(tickets);
+        repo.saveAll(tickets);
     }
 
     @Transactional
@@ -108,13 +121,17 @@ public class TicketService {
                     ticket.setCompletedAt(now());
                     ticket.setStatus(COMPLETE);
                 });
-        ticketRepo.saveAll(tickets);
+        repo.saveAll(tickets);
     }
 
-    private TicketDto convertToDto(Ticket entity){
-        return new TicketDto(entity.getId(),
-                entity.getNumber(),
+    private TicketDto convertToDto(Ticket entity) {
+        return new TicketDto(entity.getNumber(),
                 entity.getStatus(),
                 entity.getCreatedAt());
+    }
+
+    private static @NotNull Supplier<EntityNotFoundException> throwActiveTicketNotFound() {
+        return () -> new EntityNotFoundException(
+                "Active tickets not found!");
     }
 }
