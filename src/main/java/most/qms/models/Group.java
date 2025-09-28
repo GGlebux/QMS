@@ -11,7 +11,7 @@ import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static java.time.LocalDateTime.now;
-import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
+import static java.time.format.DateTimeFormatter.ofPattern;
 import static most.qms.models.GroupStatus.WAITING;
 
 @Entity
@@ -47,7 +47,7 @@ public class Group {
     public Group() {
         this.name = "Group № %s"
                 .formatted(createdAt
-                        .format(ISO_DATE_TIME));
+                        .format(ofPattern("HH:mm d MMM yyyy")));
     }
 
     @Override

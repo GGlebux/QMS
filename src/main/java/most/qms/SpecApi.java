@@ -1,11 +1,14 @@
-package most.qms.models;
+package most.qms;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
+
+import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 
 @OpenAPIDefinition(
         info = @Info(
@@ -28,6 +31,12 @@ import io.swagger.v3.oas.annotations.servers.Server;
         security = {
                 @SecurityRequirement(name = "bearerAuth")
         }
+)
+@SecurityScheme(
+        name = "bearerAuth",
+        type = HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT"
 )
 public class SpecApi {
 }

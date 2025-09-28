@@ -18,6 +18,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             WHERE g.status = most.qms.models.GroupStatus.WAITING 
             AND SIZE(g.tickets) < :capacity 
             ORDER BY g.createdAt ASC 
+            LIMIT 1
             """)
     Optional<Group> findNotFullAvailable(@Param("capacity") Long capacity);
 
@@ -26,6 +27,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             FROM Group g 
             WHERE g.status = most.qms.models.GroupStatus.CALLED 
             ORDER BY g.calledAt DESC 
+            LIMIT 1
             """)
     Optional<Group> findLastCalled();
 
@@ -35,6 +37,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             FROM Group g 
             WHERE g.status = most.qms.models.GroupStatus.WAITING  
             ORDER BY g.createdAt ASC 
+            LIMIT 1
             """
     )
     Optional<Group> findNextForCalling();

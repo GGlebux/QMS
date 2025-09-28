@@ -5,6 +5,9 @@ jwt:
 
 group:
   capacity: 5
+  timeout: 45
+  confirm:
+    percent: 0.5
 
 telegram:
   bot:

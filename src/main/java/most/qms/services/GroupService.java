@@ -1,26 +1,30 @@
 package most.qms.services;
 
 import jakarta.persistence.EntityNotFoundException;
+import most.qms.AppConfig;
 import most.qms.models.Group;
 import most.qms.repositories.GroupRepository;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
-import static most.qms.models.TicketStatus.WAITING;
+import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
 @Transactional(readOnly = true)
 public class GroupService {
-    @Value("${group.capacity}")
-    private long groupCapacity;
+    private final Logger log = getLogger(GroupService.class);
+    private final AppConfig config;
     private final GroupRepository groupRepo;
 
     @Autowired
-    public GroupService(GroupRepository groupRepo) {
+    public GroupService(AppConfig config, GroupRepository groupRepo) {
+        this.config = config;
         this.groupRepo = groupRepo;
     }
 
@@ -38,42 +42,24 @@ public class GroupService {
 
 
     @Transactional
-    public Group saveAll(Collection<Group> groups) {
+    public List<Group> saveAll(Collection<Group> groups) {
         return groupRepo
-                .saveAll(groups)
-                .getLast();
+                .saveAll(groups);
     }
-
-    public void createNewGroupIfPreviousFull(Group group) {
-        long currentCapacity = group
-                .getTickets()
-                .stream()
-                .filter(t -> t.getStatus() == WAITING)
-                .count();
-        if (currentCapacity == groupCapacity){
-            this.getLastAvailable();
-        }
-    }
-
 
     public Group getLastAvailable() {
         return groupRepo
-                .findNotFullAvailable(groupCapacity)
+                .findNotFullAvailable(config.getGroupCapacity())
                 .orElseGet(() -> groupRepo.save(new Group()));
     }
 
-    public Group findLastCalled() {
+    public Optional<Group> findLastCalled() {
         return groupRepo
-                .findLastCalled()
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Last called group not found!"));
+                .findLastCalled();
     }
 
-    public Group findNextForCalling() {
+    public Optional<Group> findNextForCalling() {
         return groupRepo
-                .findNextForCalling()
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Next calling group not found!"
-                ));
+                .findNextForCalling();
     }
 }

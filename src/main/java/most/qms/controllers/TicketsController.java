@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/tickets")
+@RolesAllowed("ROLE_USER")
 @Tag(name = "Билеты", description = "Возможности пользователя в очереди")
 public class TicketsController {
     private final TicketService service;
@@ -21,7 +22,6 @@ public class TicketsController {
         this.service = service;
     }
 
-    @RolesAllowed("ROLE_USER")
     @PostMapping
     @Operation(summary = "Занять свободное место в очереди",
             security = @SecurityRequirement(name = "bearerAuth"))
@@ -29,7 +29,6 @@ public class TicketsController {
         return service.create();
     }
 
-    @RolesAllowed("ROLE_USER")
     @PatchMapping
     @Operation(summary = "Отметиться о прохождении границы",
             security = @SecurityRequirement(name = "bearerAuth"))
@@ -37,7 +36,6 @@ public class TicketsController {
         return service.markAsComplete();
     }
 
-    @RolesAllowed("ROLE_USER")
     @DeleteMapping
     @Operation(summary = "Выйти из очереди",
             security = @SecurityRequirement(name = "bearerAuth"))

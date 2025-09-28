@@ -23,7 +23,7 @@ public class LoginRequest {
 
     @NotNull(message = "password should not be empty!")
     @Size(min = 8, max = 35, message = "password should be in range from 8 to 35 characters")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$",
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&+=])(?=\\S+$).{8,}$",
             message = "password should contains upper and lower case, special symbols, numbers without spaces")
     @Schema(description = "Пароль (8-35 символов, разный регистр, спец символы и числа)",
             requiredMode = REQUIRED,

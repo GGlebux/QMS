@@ -1,20 +1,26 @@
 package most.qms.services;
 
 import jakarta.persistence.EntityNotFoundException;
+import most.qms.AppConfig;
 import most.qms.dtos.responses.TicketDto;
+import most.qms.events.NextGroupEvent;
 import most.qms.exceptions.EntityNotCreatedException;
 import most.qms.models.Group;
 import most.qms.models.Ticket;
 import most.qms.models.TicketStatus;
 import most.qms.repositories.TicketRepository;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -28,11 +34,13 @@ import static org.springframework.http.ResponseEntity.status;
 @Service
 @Transactional(readOnly = true)
 public class TicketService {
+    private static final Logger log = LoggerFactory.getLogger(TicketService.class);
+    private final AppConfig config;
     private final TicketRepository repo;
     private final UserService userService;
     private final GroupService groupService;
     private final DailyCounterService dailyCounterService;
-    private final GroupService groupsService;
+    private final ApplicationEventPublisher publisher;
     private static final EnumSet<TicketStatus> ACTIVE_TICKET_STATUSES;
 
     static {
@@ -40,12 +48,13 @@ public class TicketService {
     }
 
     @Autowired
-    TicketService(TicketRepository repo, UserService userService, GroupService groupService, DailyCounterService dailyCounterService, GroupService groupsService) {
+    TicketService(AppConfig config, TicketRepository repo, UserService userService, GroupService groupService, DailyCounterService dailyCounterService, ApplicationEventPublisher publisher) {
+        this.config = config;
         this.repo = repo;
         this.userService = userService;
         this.groupService = groupService;
         this.dailyCounterService = dailyCounterService;
-        this.groupsService = groupsService;
+        this.publisher = publisher;
     }
 
     public List<TicketDto> findAll() {
@@ -90,9 +99,15 @@ public class TicketService {
         ticket.setStatus(COMPLETE);
         ticket.setCompletedAt(now());
 
-        groupsService.createNewGroupIfPreviousFull(ticket.getGroup());
-        
-        return ok(convertToDto(repo.save(ticket)));
+        var saved = repo.save(ticket);
+
+        var group = ticket.getGroup();
+        if (isPartOfGroupComplete(group)) {
+            publisher.publishEvent(new NextGroupEvent(this, Optional.of(group)));
+            System.err.println("Publish!!!");
+        }
+
+        return ok(convertToDto(saved));
     }
 
 
@@ -103,7 +118,12 @@ public class TicketService {
                 .findActiveByUserId(user.getId())
                 .orElseThrow(throwActiveTicketNotFound());
         ticket.setStatus(CANCELED);
+        ticket.setGroup(null);
         repo.save(ticket);
+
+        Group group = ticket.getGroup();
+        group.getTickets().remove(ticket);
+        groupService.save(group);
         return status(NO_CONTENT)
                 .body("Ticket № %s has been cancelled!"
                         .formatted(ticket.getNumber()));
@@ -111,10 +131,10 @@ public class TicketService {
 
 
     @Transactional
-    public void markAllAsWaitingInGroup(Group group) {
+    public void markAllAsCalledInGroup(Group group) {
         Set<Ticket> tickets = group.getTickets();
         tickets
-                .forEach(ticket -> ticket.setStatus(WAITING));
+                .forEach(ticket -> ticket.setStatus(CALLED));
         repo.saveAll(tickets);
     }
 
@@ -138,5 +158,14 @@ public class TicketService {
     private static @NotNull Supplier<EntityNotFoundException> throwActiveTicketNotFound() {
         return () -> new EntityNotFoundException(
                 "Active tickets not found!");
+    }
+
+    private boolean isPartOfGroupComplete(Group group) {
+        long countOfCompleted = group
+                .getTickets()
+                .stream()
+                .filter(ticket -> ticket.getStatus() == TicketStatus.COMPLETE)
+                .count();
+        return (double) config.getGroupCapacity() / countOfCompleted >= config.getGroupConfirmPercent();
     }
 }
