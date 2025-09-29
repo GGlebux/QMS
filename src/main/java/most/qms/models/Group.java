@@ -12,7 +12,7 @@ import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
-import static most.qms.models.GroupStatus.WAITING;
+import static most.qms.models.GroupStatus.*;
 
 @Entity
 @Table(name = "\"group\"")
@@ -50,15 +50,18 @@ public class Group {
                         .format(ofPattern("HH:mm d MMM yyyy")));
     }
 
-    @Override
-    public String toString() {
-        return "Group{" +
-                "completedAt=" + completedAt +
-                ", name='" + name + '\'' +
-                ", groupStatus=" + status +
-                ", createdAt=" + createdAt +
-                ", calledAt=" + calledAt +
-                ", id=" + id +
-                '}';
+    public void addTicket(Ticket ticket) {
+        this.tickets.add(ticket);
+        ticket.setGroup(this);
+    }
+
+    public void call() {
+        this.status = CALLED;
+        this.calledAt = now();
+    }
+
+    public void complete() {
+        this.status = COMPLETE;
+        this.completedAt = now();
     }
 }

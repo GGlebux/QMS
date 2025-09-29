@@ -12,7 +12,7 @@ import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static java.time.LocalDateTime.now;
-import static most.qms.models.TicketStatus.WAITING;
+import static most.qms.models.TicketStatus.*;
 
 @Entity
 @Table(name = "ticket",
@@ -39,9 +39,6 @@ public class Ticket {
     @JoinColumn(name = "group_id", referencedColumnName = "id")
     private Group group;
 
-    @Column(name = "number", nullable = false, unique = true, updatable = false)
-    private Long number;
-
     @Enumerated(STRING)
     @Column(name = "status", nullable = false)
     private TicketStatus status = WAITING;
@@ -52,10 +49,22 @@ public class Ticket {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    public Ticket(User user, Group group, Long number) {
+    public Ticket(User user, Group group) {
         this.user = user;
         this.group = group;
-        // ToDo: counter need reset every day
-        this.number = number;
+    }
+
+    public void call(){
+        this.status = CALLED;
+    }
+
+    public void complete(){
+        this.status = COMPLETE;
+        this.completedAt = now();
+    }
+
+    public void cancel(){
+        this.status = CANCELED;
+        this.group = null;
     }
 }

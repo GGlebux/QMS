@@ -1,7 +1,8 @@
 package most.qms.services;
 
 import jakarta.persistence.EntityNotFoundException;
-import most.qms.AppConfig;
+import most.qms.config.AppConfig;
+import most.qms.interfaces.GroupCrud;
 import most.qms.models.Group;
 import most.qms.repositories.GroupRepository;
 import org.slf4j.Logger;
@@ -17,13 +18,13 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
 @Transactional(readOnly = true)
-public class GroupService {
-    private final Logger log = getLogger(GroupService.class);
+public class GroupCrudService implements GroupCrud {
+    private final Logger log = getLogger(GroupCrudService.class);
     private final AppConfig config;
     private final GroupRepository groupRepo;
 
     @Autowired
-    public GroupService(AppConfig config, GroupRepository groupRepo) {
+    public GroupCrudService(AppConfig config, GroupRepository groupRepo) {
         this.config = config;
         this.groupRepo = groupRepo;
     }
@@ -47,17 +48,20 @@ public class GroupService {
                 .saveAll(groups);
     }
 
+    @Override
     public Group getLastAvailable() {
         return groupRepo
                 .findNotFullAvailable(config.getGroupCapacity())
                 .orElseGet(() -> groupRepo.save(new Group()));
     }
 
+    @Override
     public Optional<Group> findLastCalled() {
         return groupRepo
                 .findLastCalled();
     }
 
+    @Override
     public Optional<Group> findNextForCalling() {
         return groupRepo
                 .findNextForCalling();

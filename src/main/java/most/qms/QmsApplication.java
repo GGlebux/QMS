@@ -1,9 +1,7 @@
 package most.qms;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import static java.util.TimeZone.getTimeZone;
@@ -15,10 +13,5 @@ public class QmsApplication {
     public static void main(String[] args) {
         setDefault(getTimeZone("Europe/Tallinn"));
         SpringApplication.run(QmsApplication.class, args);
-    }
-
-    @Bean
-    public ModelMapper mapper() {
-        return new ModelMapper();
     }
 }

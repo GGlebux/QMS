@@ -13,30 +13,30 @@ import java.util.Optional;
 @Repository
 public interface GroupRepository extends JpaRepository<Group, Long> {
     @Query("""
-            SELECT g 
-            FROM Group g 
-            WHERE g.status = most.qms.models.GroupStatus.WAITING 
-            AND SIZE(g.tickets) < :capacity 
-            ORDER BY g.createdAt ASC 
+            SELECT g
+            FROM Group g
+            WHERE g.status = most.qms.models.GroupStatus.WAITING
+            AND SIZE(g.tickets) < :capacity
+            ORDER BY g.createdAt ASC
             LIMIT 1
             """)
     Optional<Group> findNotFullAvailable(@Param("capacity") Long capacity);
 
     @Query("""
-            SELECT g 
-            FROM Group g 
-            WHERE g.status = most.qms.models.GroupStatus.CALLED 
-            ORDER BY g.calledAt DESC 
+            SELECT g
+            FROM Group g
+            WHERE g.status = most.qms.models.GroupStatus.CALLED
+            ORDER BY g.calledAt DESC
             LIMIT 1
             """)
     Optional<Group> findLastCalled();
 
     @Query(
             """
-            SELECT g 
-            FROM Group g 
-            WHERE g.status = most.qms.models.GroupStatus.WAITING  
-            ORDER BY g.createdAt ASC 
+            SELECT g
+            FROM Group g
+            WHERE g.status = most.qms.models.GroupStatus.WAITING
+            ORDER BY g.createdAt ASC
             LIMIT 1
             """
     )
@@ -45,4 +45,6 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
 
     @EntityGraph(attributePaths = {"tickets"})
     Optional<Group> findById(Long id);
+
+    Group findByNameContainsIgnoreCase(String filterValue);
 }

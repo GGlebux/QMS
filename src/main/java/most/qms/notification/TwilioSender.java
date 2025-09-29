@@ -1,12 +1,13 @@
-package most.qms.services;
+package most.qms.notification;
 
 import com.twilio.type.PhoneNumber;
+import most.qms.interfaces.SmsSender;
 import org.springframework.beans.factory.annotation.Value;
 
 import static com.twilio.Twilio.init;
 import static com.twilio.rest.api.v2010.account.Message.creator;
 
-public class SMSSenderService implements SmsSender {
+public class TwilioSender implements SmsSender {
     
     @Value("${twilio.account.sid}")
     private String accountSid;

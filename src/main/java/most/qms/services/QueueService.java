@@ -1,100 +1,79 @@
 package most.qms.services;
 
-import most.qms.AppConfig;
+import most.qms.interfaces.GroupOperation;
+import most.qms.interfaces.QueueOperation;
 import most.qms.models.Group;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-import static java.time.LocalDateTime.now;
-import static java.time.temporal.ChronoUnit.MINUTES;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static most.qms.models.GroupStatus.CALLED;
-import static most.qms.models.GroupStatus.COMPLETE;
+import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
 @Transactional(readOnly = true)
-public class QueueService {
-    private static final Logger log = LoggerFactory.getLogger(QueueService.class);
-    private final AppConfig config;
-    private final GroupService groupService;
-    private final TicketService ticketService;
+public class QueueService implements QueueOperation {
+    private static final Logger log = getLogger(QueueService.class);
+    private final GroupCrudService groupCrud;
+    private final GroupOperation groupOperations;
 
     @Autowired
-    public QueueService(AppConfig config, GroupService groupService, TicketService ticketService) {
-        this.config = config;
-        this.groupService = groupService;
-        this.ticketService = ticketService;
+    public QueueService(GroupCrudService groupCrud, GroupOperation groupOperations) {
+        this.groupCrud = groupCrud;
+        this.groupOperations = groupOperations;
     }
 
-    @Scheduled(cron = "0 * 7-23 * * *", zone = "Europe/Tallinn")
+    @Override
     @Transactional
-    public void autoCallNextGroup() {
-        Optional<Group> lastCalled = groupService.findLastCalled();
-        // Если timeout группы истёк -> вызываем следующую
+    public String callNextGroup(Optional<Group> source) {
+        // Обрабатываем последнюю как выполненную
+        String previousOutput = this.processPrevious(source);
+
+        // Обрабатываем следующую для вызова
+        String nextOutput = this.processNext();
+
+        return "%s\n%s".formatted(previousOutput, nextOutput);
+    }
+
+    @Override
+    public String processPrevious(Optional<Group> source) {
+        String output;
+        // Если передали пустой source - пробуем найти
+        var lastCalled = source.or(groupCrud::findLastCalled);
         if (lastCalled.isPresent()) {
-            var group = lastCalled.get();
-            var now = now();
-            if (MINUTES.between(group.getCalledAt(), now) >= config.getGroupTimeOut()) {
-                this.callNextGroup(lastCalled);
-            }
-        } else {
-            // Если нет вызванной, то ищем ожидающую
-            this.callNextGroup(empty());
+            Group group = lastCalled.get();
+            groupOperations.completeGroup(group);
+            output = "Group '%s' has been successfully completed!"
+                    .formatted(group.getName());
+            log.info(output);
+            return output;
         }
+        output = "Last called group not found!";
+        log.info(output);
+        return output;
     }
 
-
-    @Transactional
-    public Optional<Group> callNextGroup(Optional<Group> source) {
-        Set<Group> groupSet = new HashSet<>();
-
-        // Обрабатываем последнюю вызванную
-        var lastCalled = source.or(groupService::findLastCalled);
-        lastCalled.ifPresent(group -> {
-            groupSet.add(this.completeGroup(group));
-            log.info("Group {} has been successfully completed", group.getName());
-        });
-
-        // Ищем следующую для вызова
-        Optional<Group> nextGroup = groupService.findNextForCalling();
+    @Override
+    public String processNext() {
+        String output;
+        Optional<Group> nextGroup = groupCrud.findNextForCalling();
         if (nextGroup.isEmpty()) {
-            log.info("No group found for calling");
-        } else if (nextGroup.get().getTickets().isEmpty()) {
-            log.info("Group {} is empty", nextGroup.get().getName());
-        } else {
-            var nextToCalling = this.callGroup(nextGroup.get());
-            groupSet.add(nextToCalling);
-            log.info("Called next group {}", nextToCalling.getName());
+            output = "No group found for calling!";
+            log.info(output);
+            return output;
         }
-
-        List<Group> saved = groupService
-                .saveAll(groupSet);
-        return saved.size() < 2 ? empty() : of(saved.getLast());
-    }
-
-    @Transactional
-    public Group completeGroup(Group group) {
-        group.setCompletedAt(now());
-        group.setStatus(COMPLETE);
-        ticketService.markAllAsCompletedInGroup(group);
-        return group;
-    }
-
-    @Transactional
-    public Group callGroup(Group group) {
-        group.setCalledAt(now());
-        group.setStatus(CALLED);
-        ticketService.markAllAsCalledInGroup(group);
-        return group;
+        if (nextGroup.get().getTickets().isEmpty()) {
+            output = "Group '%s' is empty!"
+                    .formatted(nextGroup.get().getName());
+            log.info(output);
+            return output;
+        }
+        output = "Called next group '%s'!"
+                .formatted(nextGroup.get().getName());
+        groupOperations.callGroup(nextGroup.get());
+        log.info(output);
+        return output;
     }
 }

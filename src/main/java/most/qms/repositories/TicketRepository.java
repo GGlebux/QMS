@@ -16,11 +16,11 @@ import java.util.Optional;
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @EntityGraph(attributePaths = {"group"})
     @Query(value = """
-            SELECT count(t)
+            SELECT count(t) + 1 
             FROM Ticket t 
             WHERE t.status = most.qms.models.TicketStatus.WAITING 
-            AND t.number < (
-            SELECT ot.number 
+            AND t.id < (
+            SELECT ot.id 
             FROM Ticket ot 
             WHERE ot.user.id = :user_id 
             AND ot.group.id = :group_id 

@@ -40,8 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**",
                                 "/api/verification/**",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/api/queue/**").permitAll()
+                                "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -67,7 +66,7 @@ public class SecurityConfig {
         return username -> userRepository
                 .findByPhoneNumber(username)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Username not found: " + username));
+                        "Username not found: %s".formatted(username)));
     }
 
     @Bean

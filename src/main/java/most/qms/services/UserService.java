@@ -8,6 +8,7 @@ import most.qms.dtos.requests.VerifyCodeRequest;
 import most.qms.dtos.responses.UserResponse;
 import most.qms.exceptions.AuthException;
 import most.qms.exceptions.VerificationException;
+import most.qms.interfaces.VerificationService;
 import most.qms.models.User;
 import most.qms.repositories.UserRepository;
 import org.jetbrains.annotations.NotNull;
@@ -31,22 +32,19 @@ import static org.springframework.security.core.context.SecurityContextHolder.ge
 public class UserService {
     private final UserRepository userRepo;
     private final ModelMapper mapper;
-    private final PhoneVerificationService verifyService;
+    private final VerificationService verifyService;
     private final PasswordEncoder passwordEncoder;
 
 
     @Autowired
     public UserService(UserRepository userRepo,
                        ModelMapper mapper,
-                       PhoneVerificationService verifyService, PasswordEncoder passwordEncoder) {
+                       VerificationService verifyService,
+                       PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.mapper = mapper;
         this.verifyService = verifyService;
         this.passwordEncoder = passwordEncoder;
-    }
-
-    public List<User> findAll() {
-        return userRepo.findAll();
     }
 
     public User findEntityById(Long userId) {
@@ -58,10 +56,6 @@ public class UserService {
         return userRepo.findByPhoneNumber(phoneNumber)
                 .orElseThrow(throwNotFound("User with phoneNumber=%s not found!"
                         .formatted(phoneNumber)));
-    }
-
-    public ResponseEntity<UserResponse> findDtoById(Long userId) {
-        return ok(convertToDto(this.findEntityById(userId)));
     }
 
 

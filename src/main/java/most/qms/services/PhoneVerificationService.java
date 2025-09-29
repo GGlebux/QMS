@@ -2,6 +2,8 @@ package most.qms.services;
 
 import jakarta.persistence.EntityNotFoundException;
 import most.qms.exceptions.VerificationException;
+import most.qms.interfaces.SmsSender;
+import most.qms.interfaces.VerificationService;
 import most.qms.models.PhoneVerification;
 import most.qms.repositories.PhoneVerificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static java.lang.String.valueOf;
 import static java.util.concurrent.ThreadLocalRandom.current;
+
 @Service
 @Transactional(readOnly = true)
-public class PhoneVerificationService {
+public class PhoneVerificationService implements VerificationService {
     private final PhoneVerificationRepository repo;
     private final SmsSender sender;
     private static final String SMS_TEMPLATE = """
@@ -30,6 +33,7 @@ public class PhoneVerificationService {
     }
 
     @Transactional
+    @Override
     public void sendVerificationCode(String phoneNumber) {
         String code = this.generateCode();
 
@@ -39,6 +43,7 @@ public class PhoneVerificationService {
         sender.sendSms(phoneNumber, SMS_TEMPLATE.formatted(code));
     }
 
+    @Override
     public void verifyCode(String phoneNumber, String codeFromUser) {
         PhoneVerification verification = repo
                 .findByPhoneNumber(phoneNumber)
@@ -52,7 +57,8 @@ public class PhoneVerificationService {
         }
     }
 
-    private String generateCode() {
+    @Override
+    public String generateCode() {
         return valueOf(current().nextInt(100_000, 999_999));
     }
 }

@@ -96,4 +96,9 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return isPhoneVerified;
     }
+
+    public void addTicket(Ticket ticket){
+        this.tickets.add(ticket);
+        ticket.setUser(this);
+    }
 }

@@ -1,4 +1,4 @@
-package most.qms.services;
+package most.qms.interfaces;
 
 public interface SmsSender {
     void sendSms(String phoneNumber, String message);

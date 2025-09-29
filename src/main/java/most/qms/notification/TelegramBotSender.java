@@ -1,14 +1,19 @@
 package most.qms.notification;
 
-import most.qms.services.SmsSender;
+import most.qms.interfaces.SmsSender;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 @Service
-public class MyTelegramBot extends TelegramLongPollingBot implements SmsSender {
+@Deprecated
+public class TelegramBotSender extends TelegramLongPollingBot implements SmsSender {
+    private static final Logger log = getLogger(TelegramBotSender.class);
     @Value("${telegram.bot.token}")
     private String botToken;
     private final String botUsername = "@most_verify_codes_bot";
@@ -40,7 +45,7 @@ public class MyTelegramBot extends TelegramLongPollingBot implements SmsSender {
             msg.setText(text);
             execute(msg);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 }
