@@ -1,8 +1,8 @@
 package most.qms.events;
 
+import most.qms.controllers.WebSocketController;
 import most.qms.services.QueueService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -11,10 +11,12 @@ import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMI
 @Component
 public class QueueEventListener {
     private final QueueService queueService;
+    private final WebSocketController websocket;
 
     @Autowired
-    public QueueEventListener(QueueService queueService) {
+    public QueueEventListener(QueueService queueService, WebSocketController websocket) {
         this.queueService = queueService;
+        this.websocket = websocket;
     }
 
     @TransactionalEventListener(phase = AFTER_COMMIT)
@@ -22,8 +24,11 @@ public class QueueEventListener {
         queueService.callNextGroup(event.getGroup());
     }
 
-    @EventListener
-    private void updateQueueHandler(UpdateQueueEvent event) {
-
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    private void updateQueueHandler(UpdateWebSocketEvent event) {
+        websocket.sendTicketToUser(
+                event.getUsername(),
+                event.getTicket()
+        );
     }
 }

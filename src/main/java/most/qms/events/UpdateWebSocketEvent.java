@@ -4,12 +4,14 @@ import lombok.Getter;
 import most.qms.dtos.responses.UpdatedTicketDto;
 import org.springframework.context.ApplicationEvent;
 
-public class UpdateQueueEvent extends ApplicationEvent {
-    @Getter
+@Getter
+public class UpdateWebSocketEvent extends ApplicationEvent {
+    private final String username;
     private final UpdatedTicketDto ticket;
 
-    public UpdateQueueEvent(Object source, UpdatedTicketDto ticket) {
+    public UpdateWebSocketEvent(Object source, String username, UpdatedTicketDto ticket) {
         super(source);
+        this.username = username;
         this.ticket = ticket;
     }
 }

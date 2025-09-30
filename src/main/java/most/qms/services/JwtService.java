@@ -1,4 +1,4 @@
-package most.qms.security;
+package most.qms.services;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
@@ -45,6 +45,4 @@ public class JwtService {
                 .signWith(signingKey)
                 .compact();
     }
-
-
 }

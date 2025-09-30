@@ -19,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -106,7 +105,7 @@ public class UserService {
                 .findByPhoneNumber(phoneNumber)
                 .orElseThrow(throwNotFound("User with phone number='%s' not found!"
                         .formatted(phoneNumber)));
-        verifyService.verifyCode(user.getPhoneNumber(), code);
+        verifyService.verifyCode(user.getUsername(), code);
         user.setStatus(ACTIVE);
         user.setIsPhoneVerified(true);
         userRepo.save(user);
@@ -134,7 +133,7 @@ public class UserService {
     // ToDo: дополнить для всех случаев!
 
     private User convertToEntity(User entity, UserRequest dto) {
-        if (!entity.getPhoneNumber().equals(dto.getPhoneNumber())) {
+        if (!entity.getUsername().equals(dto.getPhoneNumber())) {
             entity.setIsPhoneVerified(false);
         }
         entity.setName(dto.getName());
@@ -151,7 +150,7 @@ public class UserService {
         if (user.getIsPhoneVerified()) {
             throw new VerificationException(
                     "User with phone number=%s already verified!"
-                            .formatted(user.getPhoneNumber()));
+                            .formatted(user.getUsername()));
         }
     }
 

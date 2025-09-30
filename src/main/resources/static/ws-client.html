@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<h2>Ticket Updates</h2>
+<div id="output"></div>
+
+<script>
+    // Вставь свой JWT токен сюда:
+    const jwtToken = "PASTE_YOUR_JWT_HERE";
+
+    // Адрес твоего WebSocket эндпоинта
+    const socket = new SockJS("/ws"); // /ws как в твоём конфиге
+    const stompClient = Stomp.over(socket);
+
+    stompClient.connect(
+        { Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUk9MRV9VU0VSIiwic3ViIjoiKzc5OTM5NDUzMTU1IiwiaWF0IjoxNzU5MjYwMDMxLCJleHAiOjE3NTkzNDY0MzF9.Q-nO1duQlYZh9mWxgD6AHttjE7waw72-S68gxcXKeVc` }, // заголовок авторизации
+        (frame) => {
+            console.log("Connected:", frame);
+
+            // Подписка на персональные обновления
+            stompClient.subscribe("/user/queue/updates", (msg) => {
+                const ticket = JSON.parse(msg.body);
+                console.log("Update:", ticket);
+
+                const div = document.getElementById("output");
+                div.innerHTML = `<pre>${JSON.stringify(ticket, null, 2)}</pre>`;
+            });
+        },
+        (error) => {
+            console.error("Connection error:", error);
+        }
+    );
+</script>
+</body>
+</html>

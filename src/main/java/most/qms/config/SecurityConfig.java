@@ -1,7 +1,8 @@
-package most.qms.security;
+package most.qms.config;
 
 import most.qms.exceptions.EntityNotFoundException;
 import most.qms.repositories.UserRepository;
+import most.qms.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,7 +41,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**",
                                 "/api/verification/**",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**").permitAll()
+                                "/v3/api-docs/**",
+                                "/ws-client.html",
+                                "/ws/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

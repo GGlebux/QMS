@@ -3,9 +3,13 @@ package most.qms.services;
 import jakarta.persistence.EntityNotFoundException;
 import most.qms.dtos.responses.CreatedTicketDto;
 import most.qms.exceptions.EntityNotCreatedException;
+import most.qms.interfaces.GroupCrud;
+import most.qms.interfaces.PartCompletedQueue;
+import most.qms.interfaces.TicketUpdater;
 import most.qms.models.Group;
 import most.qms.models.Ticket;
 import most.qms.models.TicketStatus;
+import most.qms.models.User;
 import most.qms.repositories.TicketRepository;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -34,10 +38,10 @@ import static org.springframework.http.ResponseEntity.status;
 public class TicketService {
     private static final Logger log = getLogger(TicketService.class);
     private final TicketRepository repo;
+    private final TicketUpdater updater;
     private final UserService userService;
-    private final GroupCrudService groupCrud;
-    private final AutoCallQueue autoCallQueue;
-    private final ApplicationEventPublisher publisher;
+    private final GroupCrud groupCrud;
+    private final PartCompletedQueue partCompletedQueue;
     private static final EnumSet<TicketStatus> ACTIVE_TICKET_STATUSES;
 
     static {
@@ -45,37 +49,26 @@ public class TicketService {
     }
 
     @Autowired
-    TicketService(TicketRepository repo,
+    TicketService(TicketRepository repo, TicketUpdater updater, ApplicationEventPublisher publisher,
                   UserService userService,
-                  GroupCrudService groupCrud,
-                  AutoCallQueue autoCallQueue,
-                  ApplicationEventPublisher publisher) {
+                  GroupCrud groupCrud,
+                  PartCompletedQueue partCompletedQueue) {
         this.repo = repo;
+        this.updater = updater;
         this.userService = userService;
         this.groupCrud = groupCrud;
-        this.autoCallQueue = autoCallQueue;
-        this.publisher = publisher;
+        this.partCompletedQueue = partCompletedQueue;
     }
 
     public List<CreatedTicketDto> findAll() {
         return repo.findAll().stream().map(CreatedTicketDto::from).toList();
     }
 
+
     @Transactional
     public ResponseEntity<CreatedTicketDto> create() {
         var user = userService.getUserFromContextAndVerify();
-
-        boolean hasActiveTickets = user
-                .getTickets()
-                .stream()
-                .map(Ticket::getStatus)
-                .anyMatch(ACTIVE_TICKET_STATUSES::contains);
-
-        if (hasActiveTickets) {
-            throw new EntityNotCreatedException(
-                    "User with phoneNumber=%s already has active ticket!"
-                            .formatted(user.getPhoneNumber()));
-        }
+        throwIfHasActiveTickets(user);
 
         Group group = groupCrud.getLastAvailable();
 
@@ -84,8 +77,12 @@ public class TicketService {
         group.addTicket(toSave);
 
         Ticket saved = repo.save(toSave);
+
+        updater.updateOneTicket(saved);
+
         return ok(from(saved));
     }
+
 
     @Transactional
     public ResponseEntity<CreatedTicketDto> markAsComplete() {
@@ -97,7 +94,7 @@ public class TicketService {
         ticket.complete();
         var saved = repo.save(ticket);
 
-        autoCallQueue.callIfPartOfGroupComplete(ticket.getGroup());
+        partCompletedQueue.callIfPartOfGroupComplete(ticket.getGroup());
 
         return ok(from(saved));
     }
@@ -112,6 +109,9 @@ public class TicketService {
         ticket.cancel();
 
         repo.save(ticket);
+
+        updater.updateAllTickets();
+
         return status(NO_CONTENT)
                 .body("Ticket with id=%d has been cancelled!"
                         .formatted(ticket.getId()));
@@ -135,4 +135,20 @@ public class TicketService {
         return () -> new EntityNotFoundException(
                 "Active tickets not found!");
     }
+
+    private static void throwIfHasActiveTickets(User user) {
+        boolean hasActiveTickets = user
+                .getTickets()
+                .stream()
+                .map(Ticket::getStatus)
+                .anyMatch(ACTIVE_TICKET_STATUSES::contains);
+
+        if (hasActiveTickets) {
+            throw new EntityNotCreatedException(
+                    "User with phoneNumber=%s already has active ticket!"
+                            .formatted(user.getUsername()));
+        }
+    }
+
+
 }

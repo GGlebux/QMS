@@ -66,4 +66,9 @@ public class GroupCrudService implements GroupCrud {
         return groupRepo
                 .findNextForCalling();
     }
+
+    @Override
+    public Long countWaitingAhead(Group group) {
+        return groupRepo.countWaitingAhead(group.getCreatedAt());
+    }
 }

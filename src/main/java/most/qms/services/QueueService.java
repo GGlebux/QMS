@@ -1,13 +1,16 @@
 package most.qms.services;
 
+import most.qms.interfaces.GroupCrud;
 import most.qms.interfaces.GroupOperation;
 import most.qms.interfaces.QueueOperation;
+import most.qms.interfaces.TicketUpdater;
 import most.qms.models.Group;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -16,13 +19,16 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Transactional(readOnly = true)
 public class QueueService implements QueueOperation {
     private static final Logger log = getLogger(QueueService.class);
-    private final GroupCrudService groupCrud;
+    private final GroupCrud groupCrud;
     private final GroupOperation groupOperations;
+    private final TicketUpdater updater;
 
     @Autowired
-    public QueueService(GroupCrudService groupCrud, GroupOperation groupOperations) {
+    public QueueService(GroupCrud groupCrud,
+                        GroupOperation groupOperations, TicketUpdater updater) {
         this.groupCrud = groupCrud;
         this.groupOperations = groupOperations;
+        this.updater = updater;
     }
 
     @Override
@@ -33,6 +39,8 @@ public class QueueService implements QueueOperation {
 
         // Обрабатываем следующую для вызова
         String nextOutput = this.processNext();
+
+        updater.updateAllTickets();
 
         return "%s\n%s".formatted(previousOutput, nextOutput);
     }
@@ -73,6 +81,7 @@ public class QueueService implements QueueOperation {
         output = "Called next group '%s'!"
                 .formatted(nextGroup.get().getName());
         groupOperations.callGroup(nextGroup.get());
+        updater.callTickets(new ArrayList<>(nextGroup.get().getTickets()));
         log.info(output);
         return output;
     }

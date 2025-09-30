@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 // ToDo: Make indexes for this table
@@ -41,6 +42,15 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             """
     )
     Optional<Group> findNextForCalling();
+
+    @Query("""
+            SELECT COUNT(g)
+            FROM Group g
+            WHERE g.status = most.qms.models.GroupStatus.WAITING
+            AND g.createdAt < :current
+    """)
+    Long countWaitingAhead(@Param("current") LocalDateTime current);
+
 
 
     @EntityGraph(attributePaths = {"tickets"})

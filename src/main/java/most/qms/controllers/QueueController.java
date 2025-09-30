@@ -15,7 +15,6 @@ import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 @RequestMapping("/api/queue")
-
 public class QueueController {
     private final QueueService queueService;
 

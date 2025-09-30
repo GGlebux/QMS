@@ -38,5 +38,5 @@ import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
         scheme = "bearer",
         bearerFormat = "JWT"
 )
-public class SpecApi {
+public class ApiSpecification {
 }

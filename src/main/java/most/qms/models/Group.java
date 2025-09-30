@@ -2,6 +2,7 @@ package most.qms.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -17,7 +18,7 @@ import static most.qms.models.GroupStatus.*;
 @Entity
 @Table(name = "\"group\"")
 @Data
-public class Group {
+public class Group implements Comparable<Group> {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "id")
@@ -63,5 +64,14 @@ public class Group {
     public void complete() {
         this.status = COMPLETE;
         this.completedAt = now();
+    }
+
+    public boolean isWaiting(){
+        return this.status == WAITING;
+    }
+
+    @Override
+    public int compareTo(@NotNull Group o) {
+        return this.completedAt.compareTo(o.completedAt);
     }
 }

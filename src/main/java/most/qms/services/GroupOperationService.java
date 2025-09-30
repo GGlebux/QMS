@@ -1,5 +1,6 @@
 package most.qms.services;
 
+import most.qms.interfaces.GroupCrud;
 import most.qms.interfaces.GroupOperation;
 import most.qms.models.Group;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,14 +10,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class GroupOperationService implements GroupOperation {
-    private final GroupCrudService groupCrudService;
+    private final GroupCrud groupCrud;
     private final TicketService ticketService;
 
 
     @Autowired
-    public GroupOperationService(GroupCrudService groupCrudService,
+    public GroupOperationService(GroupCrud groupCrud,
                                  TicketService ticketService) {
-        this.groupCrudService = groupCrudService;
+        this.groupCrud = groupCrud;
         this.ticketService = ticketService;
     }
 
@@ -24,13 +25,13 @@ public class GroupOperationService implements GroupOperation {
     public void callGroup(Group group) {
         ticketService.callTickets(group.getTickets());
         group.call();
-        groupCrudService.save(group);
+        groupCrud.save(group);
     }
 
     @Override
     public void completeGroup(Group group) {
         ticketService.completeTickets(group.getTickets());
         group.complete();
-        groupCrudService.save(group);
+        groupCrud.save(group);
     }
 }
