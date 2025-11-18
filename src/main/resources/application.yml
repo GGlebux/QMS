@@ -5,7 +5,7 @@ jwt:
 
 group:
   capacity: 5
-  timeout: 45
+  timeout: 1
   confirm:
     percent: 0.5
 
@@ -21,6 +21,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/QMS
     username: postgres
     password: postgres
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     properties:
@@ -28,7 +29,6 @@ spring:
         show_sql: true
         hbm2ddl:
           auto: update
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   mvc:
     hidden method:

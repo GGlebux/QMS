@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
+import static org.springframework.transaction.event.TransactionPhase.BEFORE_COMMIT;
 
 @Component
 public class QueueEventListener {
@@ -19,7 +20,7 @@ public class QueueEventListener {
         this.websocket = websocket;
     }
 
-    @TransactionalEventListener(phase = AFTER_COMMIT)
+    @TransactionalEventListener(phase = BEFORE_COMMIT)
     public void handleNextGroup(NextGroupEvent event) {
         queueService.callNextGroup(event.getGroup());
     }

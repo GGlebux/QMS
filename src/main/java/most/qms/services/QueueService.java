@@ -16,7 +16,7 @@ import java.util.Optional;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 public class QueueService implements QueueOperation {
     private static final Logger log = getLogger(QueueService.class);
     private final GroupCrud groupCrud;
@@ -32,7 +32,6 @@ public class QueueService implements QueueOperation {
     }
 
     @Override
-    @Transactional
     public String callNextGroup(Optional<Group> source) {
         // Обрабатываем последнюю как выполненную
         String previousOutput = this.processPrevious(source);

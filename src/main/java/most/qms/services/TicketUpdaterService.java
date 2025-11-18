@@ -23,12 +23,14 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.collect.BoundType.OPEN;
+import static com.google.common.collect.TreeMultiset.create;
 import static java.time.Duration.ofMinutes;
 import static java.util.Comparator.comparing;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.IntStream.range;
+import static most.qms.dtos.responses.UpdatedTicketDto.from;
 
 @Service
 public class TicketUpdaterService implements TicketUpdater {
@@ -73,7 +75,7 @@ public class TicketUpdaterService implements TicketUpdater {
     @Override
     public void callTickets(List<Ticket> all) {
         for (Ticket ticket : all) {
-            var msg = UpdatedTicketDto.from(ticket, 0L, ofMinutes(0));
+            var msg = from(ticket, 0L, ofMinutes(0));
             publishUpdateSocketEvent(this, ticket.getUser().getUsername(), msg);
         }
     }
@@ -85,7 +87,7 @@ public class TicketUpdaterService implements TicketUpdater {
         Duration duration = this.calculateDurations(all)
                 .get(sourceId);
 
-        return UpdatedTicketDto.from(source, position, duration);
+        return from(source, position, duration);
     }
 
     private List<UpdatedTicketDto> createUpdatedTickets(List<Ticket> all) {
@@ -95,7 +97,7 @@ public class TicketUpdaterService implements TicketUpdater {
 
         for (Ticket source : all) {
             Long id = source.getId();
-            var temp = UpdatedTicketDto.from(source, positions.get(id), durations.get(id));
+            var temp = from(source, positions.get(id), durations.get(id));
             updatedTickets.add(temp);
         }
         return updatedTickets;
@@ -131,8 +133,8 @@ public class TicketUpdaterService implements TicketUpdater {
                 .collect(toSet());
 
         // Спец. коллекция для получения групп выше по рангу
-        TreeMultiset<Group> multiGroups = TreeMultiset.create(comparing(Group::getCreatedAt));
-        groups.addAll(groups);
+        TreeMultiset<Group> multiGroups = create(comparing(Group::getCreatedAt));
+        multiGroups.addAll(groups);
 
         return tickets
                 .stream()
