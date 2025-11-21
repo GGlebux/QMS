@@ -18,8 +18,11 @@ jobs:
           java-version: 21
           distribution: temurin
 
+      - name: Install Maven
+        run: sudo apt update && sudo apt install -y maven
+
       - name: Build backend JAR
-        run: ./mvnw clean package -DskipTests
+        run: mvn clean package -DskipTests
 
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.4
