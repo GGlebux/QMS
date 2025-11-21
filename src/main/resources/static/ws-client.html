@@ -1,41 +1,92 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>WebSocket Test</title>
+    <title>WebSocket Ticket Viewer</title>
+
+    <!-- STOMP + SockJS -->
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #log { white-space: pre-wrap; background: #f6f6f6; padding: 15px; border-radius: 10px; }
+    </style>
 </head>
 <body>
-<h2>Ticket Updates</h2>
-<div id="output"></div>
+
+<h2>🔌 WebSocket Test Client</h2>
+
+<p><b>JWT токен:</b></p>
+<textarea id="jwtInput" style="width: 100%; height: 80px;"></textarea>
+
+<br><br>
+<button onclick="connect()">▶ Подключиться</button>
+<button onclick="disconnect()">⏹ Отключиться</button>
+
+<h3>Логи:</h3>
+<div id="log"></div>
 
 <script>
-    // Вставь свой JWT токен сюда:
-    const jwtToken = "PASTE_YOUR_JWT_HERE";
 
-    // Адрес твоего WebSocket эндпоинта
-    const socket = new SockJS("/ws"); // /ws как в твоём конфиге
-    const stompClient = Stomp.over(socket);
+    // 📌 ТВОЙ URL вебсокета
+    const WS_URL = "http://localhost:8080/ws";
 
-    stompClient.connect(
-        { Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUk9MRV9VU0VSIiwic3ViIjoiKzc5OTM5NDUzMTU1IiwiaWF0IjoxNzU5MjYwMDMxLCJleHAiOjE3NTkzNDY0MzF9.Q-nO1duQlYZh9mWxgD6AHttjE7waw72-S68gxcXKeVc` }, // заголовок авторизации
-        (frame) => {
-            console.log("Connected:", frame);
+    // global stomp client
+    let stompClient = null;
 
-            // Подписка на персональные обновления
-            stompClient.subscribe("/user/queue/updates", (msg) => {
-                const ticket = JSON.parse(msg.body);
-                console.log("Update:", ticket);
+    // добавить сообщение в лог
+    function log(message) {
+        document.getElementById("log").textContent += message + "\n";
+    }
 
-                const div = document.getElementById("output");
-                div.innerHTML = `<pre>${JSON.stringify(ticket, null, 2)}</pre>`;
-            });
-        },
-        (error) => {
-            console.error("Connection error:", error);
+    // подключение
+    function connect() {
+        const jwt = document.getElementById("jwtInput").value.trim();
+
+        if (!jwt) {
+            alert("Вставь JWT токен!");
+            return;
         }
-    );
+
+        const socket = new SockJS(
+            `${WS_URL}?token=${jwt}`,
+            null,
+            { transports: ["websocket"] } // ВАЖНО — запрещаем jsonp/xhr
+        );
+
+        stompClient = Stomp.over(socket);
+
+        log("Подключаюсь...");
+
+        // подключаемся к STOMP
+        stompClient.connect({}, (frame) => {
+            log("✔ Подключено: " + frame);
+
+            // 📌 Подписка на личные сообщения
+            //     Spring отправляет в convertAndSendToUser(username, "/queue/tickets")
+            stompClient.subscribe("/user/queue/tickets", (msg) => {
+                const body = JSON.parse(msg.body);
+                log("📩 Получено сообщение:");
+                log(JSON.stringify(body, null, 2));
+            });
+
+            log("Ожидаю обновления билетов...");
+        }, (err) => {
+            log("❌ Ошибка подключения: " + err);
+        });
+    }
+
+    // отключение
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect(() => {
+                log("⛔ Отключено");
+            });
+        }
+    }
+
 </script>
+
 </body>
 </html>

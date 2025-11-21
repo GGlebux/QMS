@@ -1,6 +1,6 @@
 jwt:
   expired:
-    days: 1
+    days: 7
   secret: "9c82e0b12c4f45f292187dbab938f61adfsdfsdfsdf"
 
 group:
@@ -26,7 +26,7 @@ spring:
   jpa:
     properties:
       hibernate:
-        show_sql: true
+        show_sql: false
         hbm2ddl:
           auto: update
 

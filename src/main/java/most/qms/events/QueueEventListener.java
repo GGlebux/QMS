@@ -27,7 +27,7 @@ public class QueueEventListener {
 
     @TransactionalEventListener(phase = AFTER_COMMIT)
     private void updateQueueHandler(UpdateWebSocketEvent event) {
-        websocket.sendTicketToUser(
+        websocket.sendTicket(
                 event.getUsername(),
                 event.getTicket()
         );
