@@ -32,7 +32,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: '22123'
           source: "docker-compose.yml"
-          target: "/opt/QMS/backend/docker-compose.yml"
+          target: "/opt/QMS/backend/"
 
       - name: Copy JAR to server
         uses: appleboy/scp-action@v0.1.4
@@ -42,7 +42,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: '22123'
           source: "target/*.jar"
-          target: "/opt/QMS/backend/app.jar"
+          target: "/opt/QMS/backend/"
 
       - name: "SSH: Deploy"
         uses: appleboy/ssh-action@v1.0.3
