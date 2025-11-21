@@ -9,6 +9,10 @@ group:
   confirm:
     percent: 0.5
 
+app:
+  front-url: "http://localhost:8080"
+
+
 telegram:
   bot:
     token: 8499432352:AAFUiVWfKKt3RPjL6D8JWHlxNS678SnZJiE

@@ -2,7 +2,7 @@ package most.qms.services;
 
 
 import jakarta.persistence.EntityNotFoundException;
-import most.qms.dtos.requests.SendCodeRequest;
+import most.qms.dtos.requests.PhoneNumber;
 import most.qms.dtos.requests.UserRequest;
 import most.qms.dtos.requests.VerifyCodeRequest;
 import most.qms.dtos.responses.UserResponse;
@@ -87,8 +87,8 @@ public class UserService {
     }
 
     @Transactional
-    public void sendCodeToUserPhone(SendCodeRequest dto) {
-        var phoneNumber = dto.getPhoneNumber();
+    public void sendCodeToUserPhone(PhoneNumber dto) {
+        var phoneNumber = dto.getNumber();
         User user = userRepo
                 .findByPhoneNumber(phoneNumber)
                 .orElseThrow(throwNotFound("User with phone number='%s' not found!"

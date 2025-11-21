@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import most.qms.dtos.requests.SendCodeRequest;
+import most.qms.dtos.requests.PhoneNumber;
 import most.qms.dtos.requests.VerifyCodeRequest;
 import most.qms.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class VerificationController {
     @Operation(summary = "Send the code",
             description = "Sends the code to the entered number",
             security = @SecurityRequirement(name = "noAuth"))
-    public ResponseEntity<?> sendCode(@RequestBody @Valid SendCodeRequest dto) {
+    public ResponseEntity<?> sendCode(@RequestBody @Valid PhoneNumber dto) {
         service.sendCodeToUserPhone(dto);
         return ok("Code has been sent");
     }
