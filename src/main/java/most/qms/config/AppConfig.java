@@ -56,7 +56,7 @@ public class AppConfig {
 
     @Bean
     public HandlerExceptionResolver noHandlerFoundResolver() {
-        return (_, response, _, ex) -> {
+        return (req, response, obj, ex) -> {
             if (ex instanceof NoHandlerFoundException) {
                 response.setStatus(NOT_FOUND.value());
                 response.setContentType("application/json");

@@ -96,7 +96,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint(){
-        return (_, response, authException) -> {
+        return (req, response, authException) -> {
             response.setStatus(SC_UNAUTHORIZED);
             response.setContentType("application/json");
             Map<String, Object> body = Map.of(
@@ -109,7 +109,7 @@ public class SecurityConfig {
 
     @Bean
     public AccessDeniedHandler accessDeniedHandler(){
-        return (_, response, accessDeniedException) -> {
+        return (req, response, accessDeniedException) -> {
             response.setStatus(SC_FORBIDDEN);
             response.setContentType("application/json");
             Map<String, Object> body = Map.of(
