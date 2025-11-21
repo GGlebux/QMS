@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -22,6 +23,7 @@ import static java.time.LocalDateTime.now;
 import static java.util.List.of;
 import static most.qms.models.Role.ROLE_USER;
 import static most.qms.models.UserStatus.PENDING;
+import static most.qms.services.TicketService.ACTIVE_TICKET_STATUSES;
 
 @Entity
 @Table(name = "\"user\"", indexes = @Index(columnList = "phone_number"))
@@ -100,5 +102,12 @@ public class User implements UserDetails {
     public void addTicket(Ticket ticket){
         this.tickets.add(ticket);
         ticket.setUser(this);
+    }
+
+    public Optional<Ticket> getActiveTicket(){
+        return tickets
+                .stream()
+                .filter(t -> ACTIVE_TICKET_STATUSES.contains(t.getStatus()))
+                .findFirst();
     }
 }

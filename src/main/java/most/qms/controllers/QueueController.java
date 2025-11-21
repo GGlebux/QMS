@@ -25,7 +25,7 @@ public class QueueController {
 
     @PostMapping
     @RolesAllowed("ROLE_ADMIN")
-    @Operation(summary = "Вызвать следующую группу",
+    @Operation(summary = "Call the next group",
             security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> callNextGroup() {
         return ok(queueService.callNextGroup(empty()));

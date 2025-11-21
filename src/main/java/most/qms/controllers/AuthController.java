@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
-@Tag(name = "Аутентификация", description = "Управление регистрацией и авторизацией пользователей")
+@Tag(name = "Authentication", description = "User registration and authorization management")
 public class AuthController {
     private final UserService userService;
     private final AuthService authService;
@@ -31,16 +31,16 @@ public class AuthController {
     }
 
     @PostMapping("/auth/sign-up")
-    @Operation(summary = "Регистрация пользователя",
-            description = "Создает временного пользователя и отправляет на его номер телефона код верификации",
+    @Operation(summary = "User Registration",
+            description = "Creates a temporary user and sends the verification code to their phone number",
             security = @SecurityRequirement(name = "noAuth"))
     public ResponseEntity<UserResponse> register(@RequestBody @Valid UserRequest dto) {
         return userService.create(dto);
     }
 
     @PostMapping("/auth/sign-in")
-    @Operation(summary = "Авторизация пользователя",
-            description = "Авторизует пользователя и выдает JWT токен",
+    @Operation(summary = "User authorization",
+            description = "Authorizes the user and issues a JWT token",
             security = @SecurityRequirement(name = "noAuth"))
     public ResponseEntity<JwtAuthResponse> login(@RequestBody @Valid LoginRequest login) {
         return authService.login(login);

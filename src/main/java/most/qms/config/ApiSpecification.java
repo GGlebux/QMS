@@ -14,7 +14,7 @@ import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
         info = @Info(
                 title = "MOST API",
                 version = "0.1",
-                description = "API для управления электронной очередью",
+                description = "API for electronic queue management",
                 contact = @Contact(
                         name = "Support Team",
                         email = "rejngleb@gmail.com"

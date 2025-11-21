@@ -18,7 +18,7 @@ import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 @RequestMapping("/api/verification")
-@Tag(name = "Верификация", description = "Управление верификацией пользователей")
+@Tag(name = "Verification", description = "User Verification Management")
 public class VerificationController {
     private final UserService service;
 
@@ -28,8 +28,8 @@ public class VerificationController {
     }
 
     @PostMapping("/get-code")
-    @Operation(summary = "Отправить код",
-            description = "Отправляет код на введенный номер",
+    @Operation(summary = "Send the code",
+            description = "Sends the code to the entered number",
             security = @SecurityRequirement(name = "noAuth"))
     public ResponseEntity<?> sendCode(@RequestBody @Valid SendCodeRequest dto) {
         service.sendCodeToUserPhone(dto);
@@ -37,8 +37,8 @@ public class VerificationController {
     }
 
     @PostMapping("/verify-code")
-    @Operation(summary = "Подтвердить код",
-            description = "Подтверждает код",
+    @Operation(summary = "Confirm the code",
+            description = "Confirms the code",
             security = @SecurityRequirement(name = "noAuth"))
     public ResponseEntity<?> verifyCode(@RequestBody @Valid VerifyCodeRequest dto) {
         service.verifyUserCode(dto);

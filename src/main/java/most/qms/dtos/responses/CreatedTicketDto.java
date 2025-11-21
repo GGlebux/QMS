@@ -10,12 +10,12 @@ import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-@Schema(description = "Билет (при создании и отмене)")
+@Schema(description = "Ticket (when creating and canceling)")
 public class CreatedTicketDto {
-    @Schema(description = "Статус билета",
+    @Schema(description = "Ticket status",
             example = "WAITING")
     private TicketStatus status;
-    @Schema(description = "Время создания",
+    @Schema(description = "Creation time",
             example = "2025-09-25T17:10:18.016458556")
     private LocalDateTime createdAt;
 

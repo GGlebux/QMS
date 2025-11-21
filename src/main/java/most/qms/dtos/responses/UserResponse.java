@@ -14,34 +14,34 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "Пользователь")
+@Schema(description = "User")
 public class UserResponse {
-    @Schema(description = "Имя пользователя",
+    @Schema(description = "Username",
             example = "GGlebux")
     private String name;
 
     @JsonFormat(pattern = "dd.MM.yyyy")
-    @Schema(description = "Дата рождения в формате 'dd.MM.yyyy'",
+    @Schema(description = "Date of birth in the format 'dd.MM.yyyy'",
             example = "16.08.2006")
     private LocalDate birthDate;
 
-    @Schema(description = "Номер телефона (начинается с '+')",
+    @Schema(description = "Phone number (starts with '+')",
             example = "+79939453152")
     private String phoneNumber;
 
-    @Schema(description = "Верифицирован ли пользователь?",
+    @Schema(description = "Is the user verified?",
             example = "false")
     private Boolean isPhoneVerified;
 
-    @Schema(description = "Статус пользователя",
+    @Schema(description = "User status",
             example = "PENDING")
     private UserStatus status;
 
-    @Schema(description = "Роль пользователя",
+    @Schema(description = "User's role",
             example = "ROLE_USER")
     private Role role;
 
-    @Schema(description = "Время создания",
+    @Schema(description = "Creation time",
             example = "2025-09-25T17:10:18.016458556")
     private LocalDateTime createdAt;
 }

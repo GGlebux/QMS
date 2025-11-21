@@ -6,9 +6,9 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-@Schema(description = "JWT токен аутентификации")
+@Schema(description = "JWT authentication token")
 public class JwtAuthResponse {
-    @Schema(description = "JWT токен",
+    @Schema(description = "JWT token",
             example = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUk9MRV9VU0VSIiwic3ViIjoiKzc5OTM5NDUzMTUyIiwiaWF0IjoxNzU4Nzk3OTMyLCJleHAiOjE3NTg4ODQzMzJ9.aBRIj0SvZkMTOQjdu6qRZ4BsiFevVhTkUXXZ834mJFY")
     private String token;
 }

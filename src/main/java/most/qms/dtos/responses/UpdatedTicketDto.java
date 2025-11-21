@@ -13,20 +13,20 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @ToString
-@Schema(description = "Билет (в веб-сокете)")
+@Schema(description = "Ticket (in a websocket)")
 public class UpdatedTicketDto {
-    @Schema(description = "Позиция в очереди (обновляемая)",
+    @Schema(description = "Position in the queue (being updated)",
             example = "12")
     private Long queuePosition;
 
-    @Schema(description = "Примерное время ожидания (в минутах)",
+    @Schema(description = "Approximate waiting time (in minutes)",
             example = "150")
     private Long waitingTime;
 
-    @Schema(description = "Статус билета",
+    @Schema(description = "Ticket status",
             example = "WAITING")
     private TicketStatus status;
-    @Schema(description = "Время создания",
+    @Schema(description = "Creation time",
             example = "2025-09-25T17:10:18.016458556")
     private LocalDateTime createdAt;
 

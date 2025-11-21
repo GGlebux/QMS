@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/tickets")
 @RolesAllowed("ROLE_USER")
-@Tag(name = "Билеты", description = "Возможности пользователя в очереди")
+@Tag(name = "Tickets", description = "User options in the queue")
 public class TicketsController {
     private final TicketService service;
 
@@ -22,22 +22,30 @@ public class TicketsController {
         this.service = service;
     }
 
+    @GetMapping
+    @Operation(summary = "Sends the current ticket status to the websocket",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<String> send(){
+        return service.sendActiveTicket();
+    }
+
+
     @PostMapping
-    @Operation(summary = "Занять свободное место в очереди",
+    @Operation(summary = "Take an empty place in the queue",
             security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<CreatedTicketDto> create() {
         return service.create();
     }
 
     @PatchMapping
-    @Operation(summary = "Отметиться о прохождении границы",
+    @Operation(summary = "Mark the border crossing",
             security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<CreatedTicketDto> markAsComplete() {
         return service.markAsComplete();
     }
 
     @DeleteMapping
-    @Operation(summary = "Выйти из очереди",
+    @Operation(summary = "Exit the queue",
             security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> cancel() {
         return service.cancel();

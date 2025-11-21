@@ -29,9 +29,9 @@ import static most.qms.dtos.responses.CreatedTicketDto.from;
 import static most.qms.models.TicketStatus.CALLED;
 import static most.qms.models.TicketStatus.WAITING;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
-import static org.springframework.http.ResponseEntity.ok;
-import static org.springframework.http.ResponseEntity.status;
+import static org.springframework.http.ResponseEntity.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -42,7 +42,7 @@ public class TicketService {
     private final UserService userService;
     private final GroupCrud groupCrud;
     private final PartCompletedQueue partCompletedQueue;
-    private static final EnumSet<TicketStatus> ACTIVE_TICKET_STATUSES;
+    public static final EnumSet<TicketStatus> ACTIVE_TICKET_STATUSES;
 
     static {
         ACTIVE_TICKET_STATUSES = of(WAITING, CALLED);
@@ -58,6 +58,16 @@ public class TicketService {
         this.userService = userService;
         this.groupCrud = groupCrud;
         this.partCompletedQueue = partCompletedQueue;
+    }
+
+    public ResponseEntity<String> sendActiveTicket() {
+        var user = userService.getUserFromContextAndVerify();
+        var maybeTicket = user.getActiveTicket();
+        if  (maybeTicket.isPresent()) {
+            updater.updateOneTicket(maybeTicket.get());
+            return ok("The ticket was successfully sent!");
+        }
+        return status(NOT_FOUND).body("No active tickets found");
     }
 
     public List<CreatedTicketDto> findAll() {
