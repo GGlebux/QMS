@@ -39,8 +39,7 @@ jobs:
           source: "target/*.jar"
           target: "/opt/QMS/backend/app.jar"
 
-      - name:
-          SSH: Deploy
+      - name: "SSH: Deploy"
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
