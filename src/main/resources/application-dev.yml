@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/QMS
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        hbm2ddl:
+          auto: update
+
+jwt:
+  secret: ${JWT_SECRET}
+
+telegram:
+  bot:
+    token: ${TG_BOT_TOKEN}
+
+twilio:
+  account:
+    sid: ${TWILIO_ACCOUNT_SID}
+  auth:
+    token: ${TWILIO_AUTH_TOKEN}
+
+app:
+  front-url: "http://localhost:8080"

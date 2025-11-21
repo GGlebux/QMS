@@ -1,46 +1,18 @@
+spring:
+  application:
+    name: queue_management_system
+
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+
 jwt:
   expired:
     days: 7
-  secret: "9c82e0b12c4f45f292187dbab938f61adfsdfsdfsdf"
 
 group:
   capacity: 5
   timeout: 1
   confirm:
     percent: 0.5
-
-app:
-  front-url: "http://localhost:8080"
-
-
-telegram:
-  bot:
-    token: 8499432352:AAFUiVWfKKt3RPjL6D8JWHlxNS678SnZJiE
-
-spring:
-  application:
-    name: queue_management_system
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/QMS
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    properties:
-      hibernate:
-        show_sql: false
-        hbm2ddl:
-          auto: update
-
-  mvc:
-    hidden method:
-      filter:
-        enabled: true
-# Twilio configuration
-twilio:
-  account:
-    sid: ${TWILIO_ACCOUNT_SID}
-  auth:
-    token: ${TWILIO_AUTH_TOKEN}
