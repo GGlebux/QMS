@@ -33,7 +33,7 @@ jobs:
               -delete
 
       - name: Archive project
-        run: tar czf project.tar.gz src .mvn mvnw Dockerfile docker-compose.yml pom.xml
+        run: tar czf project.tar.gz src Dockerfile docker-compose.yml pom.xml
 
       - name: Copy archive
         uses: appleboy/scp-action@v0.1.4
