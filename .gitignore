@@ -35,3 +35,4 @@ build/
 ### Envirement variables ###
 **/src/.env
 .env
+database.env

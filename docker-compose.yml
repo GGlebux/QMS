@@ -2,6 +2,9 @@ version: '3.9'
 
 services:
   backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: qms-backend:latest
     container_name: qms-backend
     restart: always
@@ -11,9 +14,6 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
-    build:
-      context: .
-      dockerfile: Dockerfile
 
   postgres:
     image: postgres:16
@@ -24,7 +24,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5432"
 
 volumes:
   postgres_data:
