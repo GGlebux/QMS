@@ -5,7 +5,6 @@ services:
       dockerfile: Dockerfile
     image: qms-backend:latest
     container_name: qms-backend
-    restart: always
     env_file:
       - .env
     ports:
@@ -16,7 +15,6 @@ services:
   postgres:
     image: postgres:16
     container_name: qms-postgres
-    restart: always
     env_file:
       - database.env
     volumes:

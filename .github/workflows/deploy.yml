@@ -32,7 +32,20 @@ jobs:
               -not -name 'database.env' \
               -delete
 
-      - name: Copy project files to server
+      - name: Archive project
+        run: tar czf project.tar.gz src .mvn mvnw Dockerfile docker-compose.yml pom.xml
+
+      - name: Copy archive
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: '22123'
+          source: "project.tar.gz"
+          target: "/opt/QMS/backend"
+
+      - name: Extract on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -41,12 +54,8 @@ jobs:
           port: '22123'
           script: |
             cd /opt/QMS/backend
-            cp -r src/ .
-            cp -r .mvn/ .
-            cp mvnw .
-            cp docker-compose.yml .
-            cp Dockerfile .
-            cp pom.xml .
+            tar xzf project.tar.gz
+            rm project.tar.gz
 
       - name: "Check copied files"
         uses: appleboy/ssh-action@v1.0.3
