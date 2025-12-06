@@ -9,13 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Debug workspace
-        run: |
-          pwd
-          ls -la
-          ls -la src || true
-
-
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -47,13 +40,13 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: '22123'
           rm: false
-          source: |
-            src/
-            .mvn/
-            mvnw
-            docker-compose.yml
-            Dockerfile
-            pom.xml
+          source:
+            - "src/"
+            - ".mvn/"
+            - "mvnw"
+            - "docker-compose.yml"
+            - "Dockerfile"
+            - "pom.xml"
           target: "/opt/QMS/backend"
 
       - name: "SSH: Deploy"
