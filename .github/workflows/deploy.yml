@@ -43,16 +43,16 @@ jobs:
           source: "{src/, .mvn/, mvnw, docker-compose.yml, Dockerfile, pom.xml}"
           target: "/opt/QMS/backend"
 
-      - name: Check copied files
-        uses: appleboy/scp-action@v0.1.4
+      - name: "Check copied files"
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: '22123'
-        script: |
-          cd /opt/QMS/backend
-          ls -la
+          script: |
+            cd /opt/QMS/backend
+            ls -la
 
       - name: "SSH: Deploy"
         uses: appleboy/ssh-action@v1.0.3
