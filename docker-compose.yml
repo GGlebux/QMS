@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: qms-backend:latest
     container_name: qms-backend
     env_file:
       - .env

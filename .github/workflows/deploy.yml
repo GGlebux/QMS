@@ -57,17 +57,6 @@ jobs:
             tar xzf project.tar.gz
             rm project.tar.gz
 
-      - name: "Check copied files"
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: '22123'
-          script: |
-            cd /opt/QMS/backend
-            ls -la
-
       - name: "SSH: Deploy"
         uses: appleboy/ssh-action@v1.0.3
         with:
