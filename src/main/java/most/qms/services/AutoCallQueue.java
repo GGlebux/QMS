@@ -46,7 +46,7 @@ public class AutoCallQueue implements ScheduledQueue, PartCompletedQueue {
         if (lastCalled.isPresent()) {
             var group = lastCalled.get();
             var now = now();
-            if (MINUTES.between(group.getCalledAt(), now) >= config.getGroupTimeOut()) {
+            if (MINUTES.between(group.getCalledAt(), now) >= config.getGroupTimeout()) {
                 publisher.publishEvent(event);
             }
         } else {

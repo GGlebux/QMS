@@ -2,9 +2,10 @@ package most.qms.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
+import lombok.Setter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -20,18 +21,13 @@ import static java.util.Map.of;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Configuration
+@ConfigurationProperties(prefix = "app")
 @Getter
+@Setter
 public class AppConfig {
-    @Value("${group.capacity}")
     private long groupCapacity;
-
-    @Value("${group.timeout}")
-    private long groupTimeOut;
-
-    @Value("${group.confirm.percent}")
+    private long groupTimeout;
     private double groupConfirmPercent;
-
-    @Value("${app.front-url}")
     private String frontUrl;
 
     private final LongPollingBot smsSender;

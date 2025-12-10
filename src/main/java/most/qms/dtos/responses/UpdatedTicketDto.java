@@ -1,20 +1,18 @@
 package most.qms.dtos.responses;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 import most.qms.models.Ticket;
 import most.qms.models.TicketStatus;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
-@ToString
 @Schema(description = "Ticket (in a websocket)")
-public class UpdatedTicketDto {
+public class UpdatedTicketDto extends TicketDto{
     @Schema(description = "Position in the queue (being updated)",
             example = "12")
     private Long queuePosition;

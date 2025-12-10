@@ -20,11 +20,15 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Map;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static java.util.List.of;
 import static org.springframework.security.oauth2.jwt.NimbusJwtDecoder.withSecretKey;
 
 @Configuration
@@ -32,17 +36,20 @@ import static org.springframework.security.oauth2.jwt.NimbusJwtDecoder.withSecre
 public class SecurityConfig {
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final AppConfig appConfig;
 
     @Autowired
-    public SecurityConfig(JwtService jwtService, UserRepository userRepository) {
+    public SecurityConfig(JwtService jwtService, UserRepository userRepository, AppConfig appConfig) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+        this.appConfig = appConfig;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity security) throws Exception {
         return security
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(this.authenticationEntryPoint())
                         .accessDeniedHandler(this.accessDeniedHandler())
@@ -118,6 +125,20 @@ public class SecurityConfig {
             );
             response.getWriter().write(new ObjectMapper().writeValueAsString(body));
         };
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowedOrigins(of(appConfig.getFrontUrl()));
+        config.setAllowedMethods(of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
 }

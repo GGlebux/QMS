@@ -12,8 +12,8 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 public class PhoneNumber {
     @NotNull(message = "phoneNumber should not be empty!")
     @Pattern(regexp = "^\\+\\d{1,15}$", message = "phoneNumber is incorrect")
-    @Schema(description = "Phone number (starts with '+')",
+    @Schema(description = "Phone phoneNumber (starts with '+')",
             requiredMode = REQUIRED,
             example = "+79939453152")
-    private String number;
+    private String phoneNumber;
 }

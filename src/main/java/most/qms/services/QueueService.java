@@ -50,8 +50,11 @@ public class QueueService implements QueueOperation {
         // Если передали пустой source - пробуем найти
         var lastCalled = source.or(groupCrud::findLastCalled);
         if (lastCalled.isPresent()) {
+
             Group group = lastCalled.get();
             groupOperations.completeGroup(group);
+            updater.completeAllTicketsInGroup(group);
+
             output = "Group '%s' has been successfully completed!"
                     .formatted(group.getName());
             log.info(output);
@@ -77,10 +80,12 @@ public class QueueService implements QueueOperation {
             log.info(output);
             return output;
         }
-        output = "Called next group '%s'!"
-                .formatted(nextGroup.get().getName());
+
         groupOperations.callGroup(nextGroup.get());
         updater.callTickets(new ArrayList<>(nextGroup.get().getTickets()));
+
+        output = "Called next group '%s'!"
+                .formatted(nextGroup.get().getName());
         log.info(output);
         return output;
     }

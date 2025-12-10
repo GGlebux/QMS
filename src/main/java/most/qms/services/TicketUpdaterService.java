@@ -2,6 +2,8 @@ package most.qms.services;
 
 import com.google.common.collect.TreeMultiset;
 import most.qms.config.AppConfig;
+import most.qms.dtos.responses.CompletedTicketDto;
+import most.qms.dtos.responses.TicketDto;
 import most.qms.dtos.responses.UpdatedTicketDto;
 import most.qms.events.UpdateWebSocketEvent;
 import most.qms.exceptions.TicketNotUpdateException;
@@ -73,6 +75,15 @@ public class TicketUpdaterService implements TicketUpdater {
     }
 
     @Override
+    public void completeAllTicketsInGroup(Group group) {
+        Set<Ticket> allCompleted = group.getTickets();
+        for (Ticket ticket : allCompleted) {
+            var completed = CompletedTicketDto.from(ticket);
+            publishUpdateSocketEvent(this, ticket.getUser().getUsername(), completed);
+        }
+    }
+
+    @Override
     public void callTickets(List<Ticket> all) {
         for (Ticket ticket : all) {
             var msg = from(ticket, 0L, ofMinutes(0));
@@ -104,7 +115,7 @@ public class TicketUpdaterService implements TicketUpdater {
     }
 
     @Override
-    public void publishUpdateSocketEvent(Object sender, String username, UpdatedTicketDto message) {
+    public void publishUpdateSocketEvent(Object sender, String username, TicketDto message) {
         var event = new UpdateWebSocketEvent(sender, username, message);
         publisher.publishEvent(event);
     }
@@ -146,6 +157,6 @@ public class TicketUpdaterService implements TicketUpdater {
     }
 
     private Duration toDuration(Long groupsAhead) {
-        return ofMinutes(groupsAhead * config.getGroupTimeOut());
+        return ofMinutes((groupsAhead + 1) * config.getGroupTimeout());
     }
 }

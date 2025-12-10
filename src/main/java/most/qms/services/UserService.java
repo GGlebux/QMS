@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static java.util.Objects.requireNonNull;
 import static most.qms.models.UserStatus.ACTIVE;
 import static org.springframework.http.ResponseEntity.ok;
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
@@ -68,11 +69,12 @@ public class UserService {
             toSave = convertToEntity(dto);
         } else {
             User fromDB = optional.get();
-            switch (fromDB.getStatus()) {
-                case ACTIVE -> throw new AuthException(
+            if (requireNonNull(fromDB.getStatus()) == ACTIVE) {
+                throw new AuthException(
                         "Active user with number %s already exists!"
                                 .formatted(phoneNumber));
-                default -> toSave = convertToEntity(fromDB, dto);
+            } else {
+                toSave = convertToEntity(fromDB, dto);
             }
         }
 
@@ -88,7 +90,7 @@ public class UserService {
 
     @Transactional
     public void sendCodeToUserPhone(PhoneNumber dto) {
-        var phoneNumber = dto.getNumber();
+        var phoneNumber = dto.getPhoneNumber();
         User user = userRepo
                 .findByPhoneNumber(phoneNumber)
                 .orElseThrow(throwNotFound("User with phone number='%s' not found!"

@@ -65,7 +65,7 @@ public class AuthController {
             security = @SecurityRequirement(name = "noAuth"))
     public ResponseEntity<String> requestReset(@RequestBody PhoneNumber body) {
         try {
-            return resetPasswordService.requestPasswordReset(body.getNumber());
+            return resetPasswordService.requestPasswordReset(body.getPhoneNumber());
         } catch (EntityNotFoundException e) {
         return status(NOT_FOUND).body(e.getMessage());
         }

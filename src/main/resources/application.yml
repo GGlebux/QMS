@@ -11,8 +11,7 @@ jwt:
   expired:
     days: 7
 
-group:
-  capacity: 5
-  timeout: 1
-  confirm:
-    percent: 0.5
+app:
+  group-capacity: 5
+  group-timeout: 1
+  group-confirm-percent: 0.5

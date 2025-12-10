@@ -1,6 +1,7 @@
 package most.qms.interfaces;
 
-import most.qms.dtos.responses.UpdatedTicketDto;
+import most.qms.dtos.responses.TicketDto;
+import most.qms.models.Group;
 import most.qms.models.Ticket;
 
 import java.time.Duration;
@@ -12,11 +13,13 @@ public interface TicketUpdater {
 
     void updateAllTickets();
 
+    void completeAllTicketsInGroup(Group group);
+
     void callTickets(List<Ticket> all);
 
     Map<Long, Long> calculatePositions(List<Ticket> tickets);
 
     Map<Long, Duration> calculateDurations(List<Ticket> tickets);
 
-    void publishUpdateSocketEvent(Object sender, String username, UpdatedTicketDto message);
+    void publishUpdateSocketEvent(Object sender, String username, TicketDto message);
 }

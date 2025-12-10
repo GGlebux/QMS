@@ -2,16 +2,18 @@ package most.qms.dtos.responses;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import most.qms.models.Ticket;
 import most.qms.models.TicketStatus;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @Schema(description = "Ticket (when creating and canceling)")
-public class CreatedTicketDto {
+public class CreatedTicketDto extends TicketDto{
     @Schema(description = "Ticket status",
             example = "WAITING")
     private TicketStatus status;

@@ -27,11 +27,14 @@ import java.util.Map;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final AppConfig appConfig;
+
 
     @Autowired
-    public WebSocketConfig(UserRepository userRepository, JwtService jwtService) {
+    public WebSocketConfig(UserRepository userRepository, JwtService jwtService, AppConfig config) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.appConfig = config;
     }
 
     @Override
@@ -44,7 +47,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(final StompEndpointRegistry registry) {
         registry
                 .addEndpoint("/ws")
-                .setAllowedOriginPatterns("*")
+                .setAllowedOrigins(appConfig.getFrontUrl())
                 .addInterceptors(this.handshakeInterceptor())
                 .setHandshakeHandler(this.customHandshakeHandler())
                 .withSockJS();

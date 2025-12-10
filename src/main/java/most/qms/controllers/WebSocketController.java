@@ -1,7 +1,7 @@
 package most.qms.controllers;
 
 import jakarta.transaction.Transactional;
-import most.qms.dtos.responses.UpdatedTicketDto;
+import most.qms.dtos.responses.TicketDto;
 import most.qms.repositories.TicketRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +28,8 @@ public class WebSocketController {
         this.ticketRepository = ticketRepository;
     }
 
-    public void sendTicket(String username, UpdatedTicketDto ticket) {
-        log.error("sendTicket {} ToUser {}", ticket, username);
+    public void sendTicket(String username, TicketDto ticket) {
+        log.info("sendTicket {} ToUser {}", ticket.getClass().getName(), username);
         template.convertAndSendToUser(
                 username, // username из SecurityContext
                 "/queue/tickets",
