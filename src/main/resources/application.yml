@@ -13,7 +13,6 @@ jwt:
 
 
 app:
-
   group-capacity: ${GROUP_CAPACITY}
   group-timeout: ${GROUP_TIMEOUT}
   group-confirm-percent: ${GROUP_CONFIRM_PERCENT}

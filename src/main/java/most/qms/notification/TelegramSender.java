@@ -11,7 +11,6 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Service
-@Deprecated
 public class TelegramSender implements SmsSender {
     private static final Log log = LogFactory.getLog(TelegramSender.class);
     private final TelegramConfig config;
