@@ -10,6 +10,7 @@ import most.qms.exceptions.TicketNotUpdateException;
 import most.qms.interfaces.TicketUpdater;
 import most.qms.models.Group;
 import most.qms.models.Ticket;
+import most.qms.repositories.GroupRepository;
 import most.qms.repositories.TicketRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,14 +20,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.google.common.collect.BoundType.OPEN;
 import static com.google.common.collect.TreeMultiset.create;
+import static java.time.Duration.between;
 import static java.time.Duration.ofMinutes;
+import static java.time.LocalDateTime.now;
 import static java.util.Comparator.comparing;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toMap;
@@ -40,12 +40,14 @@ public class TicketUpdaterService implements TicketUpdater {
     private final ApplicationEventPublisher publisher;
     private final AppConfig config;
     private final TicketRepository repo;
+    private final GroupRepository groupRepo;
 
     @Autowired
-    public TicketUpdaterService(ApplicationEventPublisher publisher, AppConfig config, TicketRepository repo) {
+    public TicketUpdaterService(ApplicationEventPublisher publisher, AppConfig config, TicketRepository repo, GroupRepository groupRepo) {
         this.publisher = publisher;
         this.config = config;
         this.repo = repo;
+        this.groupRepo = groupRepo;
     }
 
     @Override
@@ -134,6 +136,7 @@ public class TicketUpdaterService implements TicketUpdater {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Map<Long, Duration> calculateDurations(List<Ticket> tickets) {
         // Посчитать сколько групп перед билетом и умножить на константу
 
@@ -147,16 +150,32 @@ public class TicketUpdaterService implements TicketUpdater {
         TreeMultiset<Group> multiGroups = create(comparing(Group::getCreatedAt));
         multiGroups.addAll(groups);
 
+        // Поиск последней вызванной группы, для расчета ост. времени
+        var maybeLastCalledGroup = groupRepo.findLastCalled();
+
         return tickets
                 .stream()
-                .collect(toMap(Ticket::getId, t -> toDuration(countAhead(t.getGroup(), multiGroups))));
+                .collect(toMap(Ticket::getId, t ->
+                        toDuration(
+                                countAhead(t.getGroup(), multiGroups),
+                                getServiceTime(maybeLastCalledGroup)
+                        )));
     }
 
     private static Long countAhead(Group group, TreeMultiset<Group> set) {
         return (long) set.headMultiset(group, OPEN).size();
     }
 
-    private Duration toDuration(Long groupsAhead) {
-        return ofMinutes((groupsAhead + 1) * config.getGroupTimeout());
+    private Duration toDuration(Long groupsAhead, Duration serviceTime) {
+        return ofMinutes(
+                (groupsAhead + 1) * config.getGroupTimeout())
+                .minus(serviceTime);
+    }
+
+    private Duration getServiceTime(Optional<Group> group) {
+        if (group.isPresent()) {
+            var start = group.get().getCalledAt();
+            return between(start, now());
+        } return ofMinutes(0);
     }
 }

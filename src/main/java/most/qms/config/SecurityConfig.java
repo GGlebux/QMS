@@ -29,6 +29,7 @@ import java.util.Map;
 import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static java.util.List.of;
+import static org.springframework.http.HttpMethod.OPTIONS;
 import static org.springframework.security.oauth2.jwt.NimbusJwtDecoder.withSecretKey;
 
 @Configuration
@@ -55,6 +56,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(this.accessDeniedHandler())
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**",
                                 "/api/verification/**",
                                 "/swagger-ui/**",
