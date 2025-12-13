@@ -8,10 +8,20 @@ spring:
         enabled: true
 
 jwt:
-  expired:
-    days: 7
+  secret: ${JWT_SECRET}
+  expired-days: ${JWT_EXPIRED_DAYS}
+
 
 app:
-  group-capacity: 5
-  group-timeout: 1
-  group-confirm-percent: 0.5
+
+  group-capacity: ${GROUP_CAPACITY}
+  group-timeout: ${GROUP_TIMEOUT}
+  group-confirm-percent: ${GROUP_CONFIRM_PERCENT}
+
+telegram:
+  bot-token: ${TG_BOT_TOKEN}
+  bot-username: ${TG_BOT_USERNAME}
+  chat-id: ${TG_CHAT_ID}
+  chat-thread-id: ${TG_CHAT_THREAD_ID}
+
+

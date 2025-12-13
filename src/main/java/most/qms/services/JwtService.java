@@ -24,7 +24,7 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expired.days}")
+    @Value("${jwt.expired-days}")
     private int expiredDays;
 
     @Getter

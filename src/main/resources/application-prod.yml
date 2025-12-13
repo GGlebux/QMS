@@ -11,13 +11,5 @@ spring:
         show_sql: false
         hbm2ddl:
           auto: update
-
-jwt:
-  secret: ${JWT_SECRET}
-
-telegram:
-  bot:
-    token: ${TG_BOT_TOKEN}
-
 app:
   front-url: ${FRONT_URL}
