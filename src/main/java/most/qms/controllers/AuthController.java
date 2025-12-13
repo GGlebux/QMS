@@ -9,9 +9,8 @@ import most.qms.dtos.requests.NewPass;
 import most.qms.dtos.requests.PhoneNumber;
 import most.qms.dtos.requests.UserRequest;
 import most.qms.dtos.responses.JwtAuthResponse;
+import most.qms.dtos.responses.OperationResultDto;
 import most.qms.dtos.responses.UserResponse;
-import most.qms.exceptions.EntityNotFoundException;
-import most.qms.exceptions.VerificationException;
 import most.qms.services.AuthService;
 import most.qms.services.ResetPasswordService;
 import most.qms.services.UserService;
@@ -21,10 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.ResponseEntity.status;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -63,25 +58,15 @@ public class AuthController {
     @Operation(summary = "Password Reset request",
             description = "Sends a link to reset the password to the phone number",
             security = @SecurityRequirement(name = "noAuth"))
-    public ResponseEntity<String> requestReset(@RequestBody PhoneNumber body) {
-        try {
-            return resetPasswordService.requestPasswordReset(body.getPhoneNumber());
-        } catch (EntityNotFoundException e) {
-        return status(NOT_FOUND).body(e.getMessage());
-        }
+    public ResponseEntity<OperationResultDto> requestReset(@RequestBody PhoneNumber body) {
+        return resetPasswordService.requestPasswordReset(body.getPhoneNumber());
     }
 
     @PostMapping("/reset")
     @Operation(summary = "Password Reset",
             description = "Sets a new password for the token",
             security = @SecurityRequirement(name = "noAuth"))
-    public ResponseEntity<String> reset(@RequestBody NewPass body) {
-        try {
+    public ResponseEntity<OperationResultDto> reset(@RequestBody NewPass body) {
             return resetPasswordService.resetPassword(body.getToken(), body.getNewPassword());
-        } catch (EntityNotFoundException e){
-            return status(NOT_FOUND).body(e.getMessage());
-        } catch (VerificationException e){
-            return status(BAD_REQUEST).body(e.getMessage());
-        }
     }
 }

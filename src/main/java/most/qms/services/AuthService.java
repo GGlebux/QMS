@@ -42,7 +42,8 @@ public class AuthService {
                                         .formatted(phoneNumber)));
 
         if (user.getStatus() == PENDING) {
-            throw new AuthException("User with phone number '%s' is not verified!");
+            throw new AuthException("User with phone number '%s' is not verified!"
+                    .formatted(phoneNumber));
         }
 
         UsernamePasswordAuthenticationToken tempAuth = new UsernamePasswordAuthenticationToken(

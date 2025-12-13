@@ -1,6 +1,7 @@
 package most.qms.exceptions;
 
 import jakarta.persistence.EntityNotFoundException;
+import most.qms.dtos.responses.OperationResultDto;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,7 +13,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.util.Map.of;
+import static most.qms.dtos.responses.OperationResultDto.OperationStatus.FAILURE;
 import static org.springframework.http.HttpStatus.*;
 
 @RestControllerAdvice
@@ -20,29 +21,29 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(VerificationException.class)
     @ResponseStatus(BAD_REQUEST)
     @ResponseBody
-    public Map<String, Object> handleVerificationException(VerificationException e) {
-        return convertExpToMap(e);
+    public OperationResultDto handleVerificationException(VerificationException e) {
+        return convertToResDto(e);
     }
 
     @ExceptionHandler(AuthException.class)
     @ResponseStatus(BAD_REQUEST)
     @ResponseBody
-    public Map<String, Object> handleAuthException(AuthException e) {
-        return convertExpToMap(e);
+    public OperationResultDto handleAuthException(AuthException e) {
+        return convertToResDto(e);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(BAD_REQUEST)
     @ResponseBody
-    public Map<String, Object> handleEntityNotFoundException(EntityNotFoundException e) {
-        return convertExpToMap(e);
+    public OperationResultDto handleEntityNotFoundException(EntityNotFoundException e) {
+        return convertToResDto(e);
     }
 
     @ExceptionHandler(EntityNotCreatedException.class)
     @ResponseStatus(BAD_REQUEST)
     @ResponseBody
-    public Map<String, Object> handleEntityNotCreatedException(EntityNotCreatedException e) {
-        return convertExpToMap(e);
+    public OperationResultDto handleEntityNotCreatedException(EntityNotCreatedException e) {
+        return convertToResDto(e);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -58,32 +59,32 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(FORBIDDEN)
     @ResponseBody
-    public Map<String, Object> handleBadCredentialsException(BadCredentialsException e) {
-        return convertExpToMap(e);
+    public OperationResultDto handleBadCredentialsException(BadCredentialsException e) {
+        return convertToResDto(e);
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
     @ResponseStatus(NOT_FOUND)
     @ResponseBody
-    public Map<String, Object> handleNotFound(NoHandlerFoundException ex) {
-        return of(
-                "error", "NotFound",
-                "message", "Resource not found"
-        );
+    public OperationResultDto handleNotFound(NoHandlerFoundException ex) {
+        return convertToResDto(ex);
     }
-
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(INTERNAL_SERVER_ERROR)
     @ResponseBody
-    public Map<String, Object> handleRuntimeException(Exception e) {
-        return convertExpToMap(e);
+    public OperationResultDto handleRuntimeException(Exception e) {
+        return convertToResDto(e);
     }
 
-    private Map<String, Object> convertExpToMap(Exception e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("error", e.getClass().getSimpleName());
-        response.put("message", e.getMessage());
-        return response;
+    private OperationResultDto convertToResDto(Exception e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", e.getClass().getSimpleName());
+        errors.put("message", e.getMessage());
+        
+        return OperationResultDto.builder()
+                .status(FAILURE)
+                .errors(errors)
+                .build();
     }
 }

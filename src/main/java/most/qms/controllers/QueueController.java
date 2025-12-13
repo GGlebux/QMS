@@ -15,6 +15,7 @@ import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 @RequestMapping("/api/queue")
+// ToDo: Сделать разделение 1) Завершить группу 2) Вызвать следующую
 public class QueueController {
     private final QueueService queueService;
 

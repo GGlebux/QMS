@@ -2,6 +2,7 @@ package most.qms.services;
 
 import jakarta.transaction.Transactional;
 import most.qms.config.AppConfig;
+import most.qms.dtos.responses.OperationResultDto;
 import most.qms.exceptions.EntityNotFoundException;
 import most.qms.exceptions.VerificationException;
 import most.qms.interfaces.SmsSender;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import static java.time.LocalDateTime.now;
 import static java.util.UUID.randomUUID;
+import static most.qms.dtos.responses.OperationResultDto.OperationStatus.SUCCESS;
 import static org.springframework.http.ResponseEntity.ok;
 
 @Service
@@ -42,7 +44,7 @@ public class ResetPasswordService {
     }
 
     @Transactional
-    public ResponseEntity<String> requestPasswordReset(String phoneNumber) throws EntityNotFoundException {
+    public ResponseEntity<OperationResultDto> requestPasswordReset(String phoneNumber) {
         User user = userRepo.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
@@ -58,11 +60,14 @@ public class ResetPasswordService {
         repo.save(resetToken);
 
         smsSender.sendSms(user.getPhoneNumber(), SMS_TEMPLATE.formatted(appConfig.getFrontUrl(), token));
-        return ok("Reset link sent!");
+        return ok(OperationResultDto.builder()
+                .status(SUCCESS)
+                .message("Reset link sent!")
+                .build());
     }
 
     @Transactional
-    public ResponseEntity<String> resetPassword(String token, String newPassword) throws EntityNotFoundException, VerificationException {
+    public ResponseEntity<OperationResultDto> resetPassword(String token, String newPassword) {
         ResetPassword resetToken = repo.findByToken(token)
                 .orElseThrow(() -> new EntityNotFoundException("Invalid token!"));
 
@@ -75,6 +80,9 @@ public class ResetPasswordService {
         userRepo.save(user);
 
         repo.delete(resetToken);
-        return ok("Password changed!");
+        return ok(OperationResultDto.builder()
+                .status(SUCCESS)
+                .message("Password changed!")
+                .build());
     }
 }

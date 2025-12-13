@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.RolesAllowed;
 import most.qms.dtos.responses.CreatedTicketDto;
+import most.qms.dtos.responses.OperationResultDto;
 import most.qms.services.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +26,9 @@ public class TicketsController {
     @GetMapping
     @Operation(summary = "Sends the current ticket status to the websocket",
             security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<String> send(){
+    public ResponseEntity<OperationResultDto> send(){
         return service.sendActiveTicket();
     }
-
 
     @PostMapping
     @Operation(summary = "Take an empty place in the queue",
@@ -47,7 +47,7 @@ public class TicketsController {
     @DeleteMapping
     @Operation(summary = "Exit the queue",
             security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> cancel() {
+    public ResponseEntity<OperationResultDto> cancel() {
         return service.cancel();
     }
 }

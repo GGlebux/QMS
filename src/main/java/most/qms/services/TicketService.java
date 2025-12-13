@@ -2,6 +2,7 @@ package most.qms.services;
 
 import jakarta.persistence.EntityNotFoundException;
 import most.qms.dtos.responses.CreatedTicketDto;
+import most.qms.dtos.responses.OperationResultDto;
 import most.qms.exceptions.EntityNotCreatedException;
 import most.qms.interfaces.GroupCrud;
 import most.qms.interfaces.PartCompletedQueue;
@@ -14,7 +15,6 @@ import most.qms.repositories.TicketRepository;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,16 +22,20 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import static java.util.EnumSet.of;
 import static most.qms.dtos.responses.CreatedTicketDto.from;
+import static most.qms.dtos.responses.OperationResultDto.OperationStatus.FAILURE;
+import static most.qms.dtos.responses.OperationResultDto.OperationStatus.SUCCESS;
 import static most.qms.models.TicketStatus.CALLED;
 import static most.qms.models.TicketStatus.WAITING;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
-import static org.springframework.http.ResponseEntity.*;
+import static org.springframework.http.ResponseEntity.ok;
+import static org.springframework.http.ResponseEntity.status;
 
 @Service
 @Transactional(readOnly = true)
@@ -49,7 +53,7 @@ public class TicketService {
     }
 
     @Autowired
-    TicketService(TicketRepository repo, TicketUpdater updater, ApplicationEventPublisher publisher,
+    TicketService(TicketRepository repo, TicketUpdater updater,
                   UserService userService,
                   GroupCrud groupCrud,
                   PartCompletedQueue partCompletedQueue) {
@@ -60,14 +64,20 @@ public class TicketService {
         this.partCompletedQueue = partCompletedQueue;
     }
 
-    public ResponseEntity<String> sendActiveTicket() {
+    public ResponseEntity<OperationResultDto> sendActiveTicket() {
         var user = userService.getUserFromContextAndVerify();
         var maybeTicket = user.getActiveTicket();
         if  (maybeTicket.isPresent()) {
             updater.updateOneTicket(maybeTicket.get());
-            return ok("The ticket was successfully sent!");
+            return ok(OperationResultDto.builder()
+                    .status(SUCCESS)
+                    .message("The ticket was successfully sent!")
+                    .build());
         }
-        return status(NOT_FOUND).body("No active tickets found");
+        return status(NOT_FOUND).body(OperationResultDto.builder()
+                .status(FAILURE)
+                .errors(Map.of("EntityNotFoundException", "No active tickets found!"))
+                .build());
     }
 
     public List<CreatedTicketDto> findAll() {
@@ -111,7 +121,7 @@ public class TicketService {
 
 
     @Transactional
-    public ResponseEntity<String> cancel() {
+    public ResponseEntity<OperationResultDto> cancel() {
         var user = userService.getUserFromContextAndVerify();
         Ticket ticket = repo
                 .findActiveByUserId(user.getId())
@@ -123,8 +133,12 @@ public class TicketService {
         updater.updateAllTickets();
 
         return status(NO_CONTENT)
-                .body("Ticket with id=%d has been cancelled!"
-                        .formatted(ticket.getId()));
+                .body(OperationResultDto.builder()
+                        .status(SUCCESS)
+                        .message(("Ticket with id=%d has been cancelled!"
+                                .formatted(ticket.getId())))
+                        .build()
+                );
     }
 
 
